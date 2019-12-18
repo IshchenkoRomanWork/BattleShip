@@ -6,7 +6,7 @@ namespace BattleShip.Models
 {
     public struct Coords
     {
-        public (int, int) Head;
+        public (int, int) Head; //Coords are X and Y
         public (int, int) Stern;
     }
 }

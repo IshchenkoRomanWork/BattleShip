@@ -9,6 +9,8 @@ namespace BattleShip.Models
         Left,
         Right,
         Up,
-        Down
+        Down,
+        Horizontal = Left | Right,
+        Vertical = Up | Down
     }
 }

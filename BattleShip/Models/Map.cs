@@ -10,7 +10,10 @@ namespace BattleShip.Models
 
         public bool AddShip(Ship ship)
         {
-            return default(bool);
+            if (!CheckPositionsAreFree(ship.Coords))
+                return false;
+            AllShips.Add(ship.Coords, ship);
+            return true;
         }
 
         public string GetState()
@@ -26,6 +29,29 @@ namespace BattleShip.Models
         private bool CheckPositionsAreFree(Coords checkedCoords)
         {
             return default(bool);
+            //Direction direction = checkedCoords.Head.Item1 != checkedCoords.Stern.Item1 ? Direction.Horizontal : Direction.Vertical;
         }
+
+        private bool CheckPositionAreFree((int, int) coord)
+        {
+            return default(bool);
+            //foreach(KeyValuePair<Coords, Ship> pair in AllShips)
+            //{
+
+            //}
+        }
+
+        public Ship this[(int, int) coord]
+        {
+            get
+            {
+                return default(Ship);
+            }
+            set
+            {
+
+            }
+        }
+
     }
 }

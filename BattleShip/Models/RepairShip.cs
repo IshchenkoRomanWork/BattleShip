@@ -23,7 +23,10 @@ namespace BattleShip.Models
 
         public override string GetState()
         {
-            return base.GetState();
+            StringBuilder sBuilder = new StringBuilder();
+            sBuilder.Append("This is Repair Type Ship");
+            sBuilder.Append(base.GetState());
+            return sBuilder.ToString();
         }
     }
 }
