@@ -11,7 +11,7 @@ namespace BattleShip.Services
 
         public UnitOfWork()
         {
-            Map = new Map();
+            Map = new Map(100);
         }
 
 

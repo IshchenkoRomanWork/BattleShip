@@ -20,10 +20,10 @@ namespace BattleShip.Models
         public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append(String.Format($"This ship Length is {0}) \n", Length));
-            sBuilder.Append(String.Format($"This ships speed is {0} \n", Speed));
-            sBuilder.Append(String.Format($"This ships hitPoints is {0} \n", HitPoints));
-            sBuilder.Append(String.Format($"This ships Length is {0} \n", Length));
+            sBuilder.Append(String.Format("This ship Length is {0} \n", Length));
+            sBuilder.Append(String.Format("This ships speed is {0} \n", Speed));
+            sBuilder.Append(String.Format("This ships hitPoints is {0} \n", HitPoints));
+            sBuilder.Append(String.Format("This ships Length is {0} \n", Length));
             return sBuilder.ToString();
         }
 
