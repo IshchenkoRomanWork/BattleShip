@@ -24,7 +24,7 @@ namespace BattleShip.Models
         public override string GetState()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append("This is War Type Ship");
+            sBuilder.Append("This is War Type Ship \n");
             sBuilder.Append(base.GetState());
             return sBuilder.ToString();
         }

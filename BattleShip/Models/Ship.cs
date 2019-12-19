@@ -19,10 +19,10 @@ namespace BattleShip.Models
         public virtual string GetState()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append(($"This ship is located at X: {0}, Y: {1}", Coords.Head.Item1, Coords.Head.Item2));
-            sBuilder.Append(($"This ships speed is {0}", Speed));
-            sBuilder.Append(($"This ships hitPoints is {0}", HitPoints));
-            sBuilder.Append(($"This ships Length is {0}", GetLength(this)));
+            sBuilder.Append(($"This ship is located at X: {0}, Y: {1} \n", Coords.Head.Item1, Coords.Head.Item2));
+            sBuilder.Append(($"This ships speed is {0} \n", Speed));
+            sBuilder.Append(($"This ships hitPoints is {0} \n", HitPoints));
+            sBuilder.Append(($"This ships Length is {0} \n", GetLength(this)));
             return sBuilder.ToString();
         }
 

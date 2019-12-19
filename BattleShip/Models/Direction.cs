@@ -10,7 +10,6 @@ namespace BattleShip.Models
         Right,
         Up,
         Down,
-        Horizontal = Left | Right,
-        Vertical = Up | Down
+        NoDirection
     }
 }
