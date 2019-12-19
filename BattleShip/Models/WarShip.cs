@@ -10,22 +10,23 @@ namespace BattleShip.Models
         public int ActionRange { get; set; }
         public int ShotDamage { get; set; }
 
-        public bool Shot(Ship target)
-        {
-            throw new NotImplementedException();
-        }
-
-        public WarShip(Coords coords, int speed, int hitPoints, int actionRange, int shotDamage) : base(coords, speed, hitPoints)
+        public WarShip(int length, int speed, int hitPoints, int actionRange, int shotDamage) : base(length, speed, hitPoints)
         {
             ActionRange = actionRange;
             ShotDamage = shotDamage;
         }
 
-        public override string GetState()
+        public bool Shot(Ship target)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append("This is War Type Ship \n");
-            sBuilder.Append(base.GetState());
+            sBuilder.Append(String.Format("This is War Type Ship \n"));
+            sBuilder.Append(base.ToString());
             return sBuilder.ToString();
         }
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BattleShip.Services;
+using System;
 
 namespace BattleShip
 {
@@ -6,7 +7,8 @@ namespace BattleShip
     {
         static void Main(string[] args)
         {
-            
+            ConsoleWorker consoleWorker = new ConsoleWorker();
+            consoleWorker.EntryPoint();
         }
     }
 }

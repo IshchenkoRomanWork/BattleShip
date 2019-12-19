@@ -10,22 +10,23 @@ namespace BattleShip.Models
         public int ActionRange { get; set; }
         public int RepairAmount { get; set ; }
 
+        public RepairShip(int length, int speed, int hitPoints, int actionRange, int repairAmount) : base(length, speed, hitPoints)
+        {
+            ActionRange = actionRange;
+            RepairAmount = repairAmount;
+        }
         public bool Repair(Ship target)
         {
             throw new NotImplementedException();
         }
 
-        public RepairShip(Coords coords, int speed, int hitPoints, int actionRange, int repairAmount) : base(coords, speed, hitPoints)
-        {
-            ActionRange = actionRange;
-            RepairAmount = repairAmount;
-        }
 
-        public override string GetState()
+
+        public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append("This is Repair Type Ship \n");
-            sBuilder.Append(base.GetState());
+            sBuilder.Append(String.Format("This is Repair Type Ship \n"));
+            sBuilder.Append(base.ToString());
             return sBuilder.ToString();
         }
     }

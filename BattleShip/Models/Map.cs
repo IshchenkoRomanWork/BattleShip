@@ -7,158 +7,42 @@ namespace BattleShip.Models
 {
     public class Map
     {
-        private Dictionary<Coords, Ship> AllShips { get; set; }
+        private List<(ShipLocation, Ship)> _allShips;
 
-        public bool AddShip(Ship ship)
+        private List<(int, int)> _occupiedCoords;
+
+        public Map()
         {
-            if (!CheckPositionsAreFree(ship.Coords))
+            _allShips = new List<(ShipLocation, Ship)>();
+            _occupiedCoords = new List<(int, int)>();
+        }
+
+        public bool AddShip(Ship ship, ShipLocation startingLocation)
+        {
+            var coords = GetAllCoordsInSection(startingLocation.Direction, ship.Length, startingLocation.Coords);
+
+            if (CheckPositionsAreFree(coords))
+            {
+                _allShips.Add((startingLocation, ship));
+                _occupiedCoords.AddRange(coords);
+            }
+            else
+            {
                 return false;
-            AllShips.Add(ship.Coords, ship);
+            }
+
             return true;
         }
 
-        public string GetState()
-        {
-            Ship[] shipArray = new Ship[AllShips.Count];
-            AllShips.Values.CopyTo(shipArray, 0);
-            List<Ship> shipList = new List<Ship>(shipArray);
-            shipList.Sort(new ShipComparer());
-
-            StringBuilder sBuilder = new StringBuilder();
-            foreach (var ship in shipList)
-            {
-                sBuilder.Append(ship.GetState());
-                sBuilder.Append("/n");
-            }
-
-            return sBuilder.ToString();
-        }
-
-        public bool Move(Direction direction, Ship ship)
-        {
-            int headX = ship.Coords.Head.Item1;
-            int sternX = ship.Coords.Stern.Item1;
-            int headY = ship.Coords.Head.Item2;
-            int sternY = ship.Coords.Stern.Item2;
-            int speed = ship.Speed;
-            switch(direction)
-            {
-                case Direction.Left:
-                    headX -= speed;
-                    sternX -= speed;
-                    break;
-                case Direction.Right:
-                    headX += speed;
-                    sternX += speed;
-                    break;
-                case Direction.Down:
-                    headY -= speed;
-                    sternY -= speed;
-                    break;
-                case Direction.Up:
-                    headY += speed;
-                    sternY += speed;
-                    break;
-            }
-
-            Coords newLocationCoords = new Coords((headX, headY), (sternX, sternY));
-
-            if (!CheckPositionsAreFree(newLocationCoords))
-                return false;
-
-            ship.Coords = newLocationCoords;
-            AllShips.Remove(ship.Coords);
-            AllShips.Add(newLocationCoords, ship);
-            return true;
-        }
-
-        private bool CheckPositionsAreFree(Coords checkedCoords)
-        {
-            //return default(bool);
-            List<(int, int)> checkedSection = GetAllCoordsInSection(checkedCoords);
-            foreach (var sectionCoord in checkedSection)
-            {
-                if (!CheckPositionAreFree(sectionCoord))
-                    return false;
-            }
-            return true;
-        }
-
-        private bool CheckPositionAreFree((int, int) coord)
-        {
-            //return default(bool);
-            foreach(KeyValuePair<Coords, Ship> pair in AllShips)
-            {
-                var sectionCoords = GetAllCoordsInSection(pair.Key);
-                foreach (var sectionCoord in sectionCoords)
-                {
-                    if (sectionCoord == coord)
-                        return false;
-                }
-            }
-            return true;
-        }
-
-        private List<(int, int)> GetAllCoordsInSection(Coords coords)
-        {
-            var sectionCoords = new List<(int, int)>();
-            sectionCoords.Add(coords.Head);
-            Direction direction = Direction.NoDirection;
-            int length = 0;
-            int headX = coords.Head.Item1;
-            int sternX = coords.Stern.Item1;
-            int headY = coords.Head.Item2;
-            int sternY = coords.Stern.Item2;
-
-            //Direction Check
-
-            if (headX > sternX)
-            {
-                length = headX - sternX;
-                direction = Direction.Left;
-            }
-            else if (headX < sternX)
-            {
-                length = sternX - headX;
-                direction = Direction.Right;
-            }
-            else if (headY > sternY)
-            {
-                length = headY - sternY;
-                direction = Direction.Down;
-            }
-            else if (headY < sternY)
-            {
-                length = sternY - headY;
-                direction = Direction.Up;
-            }
-            for (int i = 1; i <= length; i++)
-            {
-                switch (direction)
-                {
-                    case Direction.Right:
-                        sectionCoords.Add((headX - i, headY));
-                        break;
-                    case Direction.Left:
-                        sectionCoords.Add((headX + i, headY));
-                        break;
-                    case Direction.Down:
-                        sectionCoords.Add((headX, headY - 1));
-                        break;
-                    case Direction.Up:
-                        sectionCoords.Add((headX, headY + 1));
-                        break;
-                }
-            }
-            return sectionCoords;
-        }
 
         public Ship this[int quadrant, int xCoord, int yCoord]
         {
             get
             {
                 if (quadrant < 1 || quadrant > 4)
-                    throw new Exception("Wrong quadrant specified");
+                    throw new Exception("Quadrans can range only from 1 to 4");
+                if (xCoord < 0 || yCoord < 0)
+                    throw new Exception("Coords cant be less than zero");
 
                 switch (quadrant)
                 {
@@ -174,14 +58,67 @@ namespace BattleShip.Models
                         break;
                 }
 
-                foreach (var pair in AllShips)
+                foreach (var pair in _allShips)
                 {
-                    if (pair.Key.Head == (xCoord, yCoord))
-                        return pair.Value;
+                    if (pair.Item1.Coords == (xCoord, yCoord))
+                        return pair.Item2;
                 }
 
                 throw new Exception("Ship is not Found on these coordinates");
             }
+        }
+
+        public override string ToString()
+        {
+            _allShips.Sort(new ShipComparer());
+
+            StringBuilder sBuilder = new StringBuilder();
+            foreach (var pair in _allShips)
+            {
+                sBuilder.Append(pair.Item2.ToString());
+                sBuilder.Append("\n");
+            }
+
+            return sBuilder.ToString();
+        }
+
+        private bool CheckPositionsAreFree(List<(int, int)> checkedCoords)
+        {
+            foreach (var coord in checkedCoords)
+            {
+                if (_occupiedCoords.Contains(coord))
+                    return false;
+            }
+            return true;
+        }
+
+        private List<(int, int)> GetAllCoordsInSection(Direction direction, int length, (int, int) startingCoord)
+        {
+            var sectionCoords = new List<(int, int)>();
+            sectionCoords.Add(startingCoord);
+
+            int headX = startingCoord.Item1;
+            int headY = startingCoord.Item1;
+
+            for (int i = 1; i <= length; i++)
+            {
+                switch (direction)
+                {
+                    case Direction.Right:
+                        sectionCoords.Add((headX + i, headY));
+                        break;
+                    case Direction.Left:
+                        sectionCoords.Add((headX - i, headY));
+                        break;
+                    case Direction.Down:
+                        sectionCoords.Add((headX, headY + 1));
+                        break;
+                    case Direction.Up:
+                        sectionCoords.Add((headX, headY - 1));
+                        break;
+                }
+            }
+            return sectionCoords;
         }
 
     }

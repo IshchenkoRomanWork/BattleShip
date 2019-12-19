@@ -6,13 +6,13 @@ using System.Text;
 
 namespace BattleShip.Services
 {
-    class ShipComparer : IComparer<Ship>
+    class ShipComparer : IComparer<(ShipLocation, Ship)>
     {
 
-        public int Compare([AllowNull] Ship firstShip, [AllowNull] Ship secondShip)
+        public int Compare([AllowNull] (ShipLocation, Ship) firstShip, [AllowNull] (ShipLocation, Ship) secondShip)
         {
-            int firstShipHeadSqr = (int)(Math.Pow(firstShip.Coords.Head.Item1, 2) + Math.Pow(firstShip.Coords.Head.Item2, 2));
-            int secondShipHeadSqr = (int)(Math.Pow(secondShip.Coords.Head.Item1, 2) + Math.Pow(secondShip.Coords.Head.Item2, 2));
+            int firstShipHeadSqr = (int)(Math.Pow(firstShip.Item1.Coords.Item1, 2) + Math.Pow(firstShip.Item1.Coords.Item2, 2));
+            int secondShipHeadSqr = (int)(Math.Pow(secondShip.Item1.Coords.Item1, 2) + Math.Pow(secondShip.Item1.Coords.Item2, 2));
             double firstShipDistance = Math.Sqrt(firstShipHeadSqr);
             double secondShipDistance = Math.Sqrt(secondShipHeadSqr);
 

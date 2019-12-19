@@ -5,8 +5,9 @@ using System.Text;
 
 namespace BattleShip.Interfaces
 {
-    interface IRepairShip : IActionRange
+    interface IRepairShip
     {
+        public int ActionRange { get; set; }
         public int RepairAmount { get; set; }
         public bool Repair(Ship target);
     }

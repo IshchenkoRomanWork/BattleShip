@@ -11,6 +11,13 @@ namespace BattleShip.Models
         public int ShotDamage { get; set; }
         public int RepairAmount { get; set; }
 
+        public RepairWarShip(int length, int speed, int hitPoints, int actionRange, int repairAmount, int shotDamage) : base(length, speed, hitPoints)
+        {
+            ActionRange = actionRange;
+            RepairAmount = repairAmount;
+            ShotDamage = shotDamage;
+        }
+
         public bool Repair(Ship target)
         {
             throw new NotImplementedException();
@@ -21,18 +28,11 @@ namespace BattleShip.Models
             throw new NotImplementedException();
         }
 
-        public RepairWarShip(Coords coords, int speed, int hitPoints, int actionRange, int repairAmount, int shotDamage) : base(coords, speed, hitPoints)
-        {
-            ActionRange = actionRange;
-            RepairAmount = repairAmount;
-            ShotDamage = shotDamage;
-        }
-
-        public override string GetState()
+        public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append("This is Mixed Type Ship \n");
-            sBuilder.Append(base.GetState());
+            sBuilder.Append(String.Format("This is Mixed Type Ship \n"));
+            sBuilder.Append(base.ToString());
             return sBuilder.ToString();
         }
     }

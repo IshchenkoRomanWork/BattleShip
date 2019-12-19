@@ -1,51 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace BattleShip.Models
 {
-    public abstract class Ship
+    public abstract class Ship : IEquatable<Ship>
     {
-        public Coords Coords { get; set; }
+        public int Length { get; set; }
         public int Speed { get; set; }
         public int HitPoints { get; set; }
 
-        public Ship(Coords coords, int speed, int hitPoints)
+        public Ship(int length, int speed, int hitPoints)
         {
-            Coords = coords;
-            Speed = speed;
-            hitPoints = HitPoints;
+            Length = length;
+            Speed = speed;  
+            HitPoints = hitPoints;
         }
-        public virtual string GetState()
+        public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append(($"This ship is located at X: {0}, Y: {1} \n", Coords.Head.Item1, Coords.Head.Item2));
-            sBuilder.Append(($"This ships speed is {0} \n", Speed));
-            sBuilder.Append(($"This ships hitPoints is {0} \n", HitPoints));
-            sBuilder.Append(($"This ships Length is {0} \n", GetLength(this)));
+            sBuilder.Append(String.Format($"This ship Length is {0}) \n", Length));
+            sBuilder.Append(String.Format($"This ships speed is {0} \n", Speed));
+            sBuilder.Append(String.Format($"This ships hitPoints is {0} \n", HitPoints));
+            sBuilder.Append(String.Format($"This ships Length is {0} \n", Length));
             return sBuilder.ToString();
         }
 
         public static bool operator ==(Ship firstShip, Ship secondShip)
         {
-            bool typesAreEqual = firstShip.GetType() == secondShip.GetType();
-            bool speedAreEqual = firstShip.Speed == secondShip.Speed;
-            bool lengthAreEqual = GetLength(firstShip) == GetLength(secondShip);
-            return typesAreEqual && speedAreEqual && lengthAreEqual;
-            //Also we can use "if" to stop calculation after first inequality
-        }
-
-        private static int GetLength(Ship ship)
-        {
-            int value = (ship.Coords.Head.Item1 - ship.Coords.Stern.Item1)
-                + (ship.Coords.Head.Item2 - ship.Coords.Stern.Item2);
-            return Math.Abs(value);
+            return firstShip.Equals(secondShip);
         }
 
         public static bool operator !=(Ship firstShip, Ship secondShip)
         {
             return !(firstShip == secondShip);
         }
+
+        public bool Equals([AllowNull] Ship other)
+        {
+            bool typesAreEqual = this.GetType() == other.GetType();
+            bool speedAreEqual = this.Speed == other.Speed;
+            bool lengthAreEqual = this.Length == other.Length;
+            return typesAreEqual && speedAreEqual && lengthAreEqual;
+            //Also we can use "if" to stop calculation after first inequality
+        }
+
+
 
 
     }
