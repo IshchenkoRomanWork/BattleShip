@@ -11,18 +11,25 @@ namespace BattleShip.Models
 
         private List<(int, int)> _occupiedCoords;
 
+        private MapHelper _mapHelper;
+
         private int _quadrantSize;
 
         public Map(int quadrantSize)
         {
             _allShips = new List<(ShipLocation, Ship)>();
             _occupiedCoords = new List<(int, int)>();
+            _mapHelper = new MapHelper();
+            if(quadrantSize < 1)
+            {
+                throw new Exception("Quadrant size can't be less thah 1");
+            }
             _quadrantSize = quadrantSize;
         }
 
         public void AddShip(Ship ship, ShipLocation startingLocation)
         {
-            var coords = GetAllCoordsInSection(startingLocation.Direction, ship.Length, startingLocation.Coords);
+            var coords = _mapHelper.GetAllCoordsInSection(startingLocation.Direction, ship.Length, startingLocation.Coords);
 
             ValidateCoords(coords);
 
@@ -72,54 +79,6 @@ namespace BattleShip.Models
             return checkedCoord.Item1 != 0 && checkedCoord.Item2 != 0;
         } //Validation Check
 
-        private List<(int, int)> GetAllCoordsInSection(Direction direction, int length, (int, int) startingCoord)
-        {
-            var sectionCoords = new List<(int, int)>();
-            sectionCoords.Add(startingCoord);
-
-            int headX = startingCoord.Item1;
-            int headY = startingCoord.Item2;
-
-            for (int i = 1; i < length; i++)
-            {
-                switch (direction)
-                {
-                    case Direction.Right:
-                        if (headX - i == 0)
-                        {
-                            i++;
-                            length++;
-                        }
-                        sectionCoords.Add((headX - i, headY));
-                        break;
-                    case Direction.Left:
-                        if (headX + i == 0)
-                        {
-                            i++;
-                            length++;
-                        }
-                        sectionCoords.Add((headX + i, headY));
-                        break;
-                    case Direction.Down:
-                        if (headY + i == 0)
-                        {
-                            i++;
-                            length++;
-                        }
-                        sectionCoords.Add((headX, headY + i));
-                        break;
-                    case Direction.Up:
-                        if (headY - i == 0)
-                        {
-                            i++;
-                            length++;
-                        }
-                        sectionCoords.Add((headX, headY - i));
-                        break;
-                }
-            }
-            return sectionCoords;
-        }
         public override string ToString()
         {
             _allShips.Sort(new ShipComparer());

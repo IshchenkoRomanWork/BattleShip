@@ -32,10 +32,10 @@ namespace BattleShip.Services
 
         void Stubs()
         {
-            _unitOfWork.Map.AddShip(new RepairWarShip(4, 40, 40, 40, 40, 40), new ShipLocation(Direction.Right, (50, 2)));
-            _unitOfWork.Map.AddShip(new WarShip(5, 50, 50, 50, 50), new ShipLocation(Direction.Left, (3, 3)));
-            _unitOfWork.Map.AddShip(new WarShip(2, 20, 20, 20, 20), new ShipLocation(Direction.Right, (1, 0)));
-            _unitOfWork.Map.AddShip(new RepairShip(3, 30, 30, 30, 30), new ShipLocation(Direction.Left, (1000, 1)));
+            _unitOfWork.Map.AddShip(new RepairWarShip(10, 40, 40, 40, 40, 40), new ShipLocation(Direction.Right, (1, 2)));
+            _unitOfWork.Map.AddShip(new WarShip(5, 50, 50, 50, 50), new ShipLocation(Direction.Left, (100, 100)));
+            _unitOfWork.Map.AddShip(new WarShip(2, 20, 20, 20, 20), new ShipLocation(Direction.Right, (1, 50)));
+            _unitOfWork.Map.AddShip(new RepairShip(3, 30, 30, 30, 30), new ShipLocation(Direction.Left, (-100, 1)));
         }
 
         bool ChooseOrder()
@@ -74,7 +74,7 @@ namespace BattleShip.Services
             }
             while (orderNotSelected);
             return true;
-        }
+        } 
 
         //void AddShip()
         //{
@@ -177,7 +177,7 @@ namespace BattleShip.Services
         //}
         void GetTotalState()
         {
-            Console.WriteLine("There's Current Sea State: \n");
+            Console.WriteLine("There's Current Seas State: \n");
             Console.WriteLine(_unitOfWork.Map.ToString());
         }
     }

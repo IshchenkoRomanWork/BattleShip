@@ -13,17 +13,22 @@ namespace BattleShip.Models
 
         public Ship(int length, int speed, int hitPoints)
         {
+            if (length < 1)
+                throw new Exception("Length of Ship can't be lesser than one");
             Length = length;
-            Speed = speed;  
+            if (speed < 0)
+                throw new Exception("Speed can't be negative");
+            Speed = speed;
+            if (hitPoints < 0)
+                throw new Exception("Hit points can't be negative");
             HitPoints = hitPoints;
         }
         public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append(String.Format("This ship Length is {0} \n", Length));
+            sBuilder.Append(String.Format("This ships Length is {0} \n", Length));
             sBuilder.Append(String.Format("This ships speed is {0} \n", Speed));
             sBuilder.Append(String.Format("This ships hitPoints is {0} \n", HitPoints));
-            sBuilder.Append(String.Format("This ships Length is {0} \n", Length));
             return sBuilder.ToString();
         }
 
