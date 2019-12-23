@@ -15,6 +15,11 @@ namespace BattleShip.Models
             ActionRange = actionRange;
             RepairAmount = repairAmount;
         }
+
+        public RepairShip()
+        {
+        }
+
         public bool Repair(Ship target)
         {
             throw new NotImplementedException();

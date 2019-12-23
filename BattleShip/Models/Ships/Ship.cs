@@ -23,6 +23,11 @@ namespace BattleShip.Models
                 throw new Exception("Hit points can't be negative");
             HitPoints = hitPoints;
         }
+
+        public Ship()
+        {
+
+        }
         public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();

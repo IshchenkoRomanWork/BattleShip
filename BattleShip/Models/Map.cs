@@ -99,8 +99,10 @@ namespace BattleShip.Models
             {
                 if (quadrant < 1 || quadrant > 4)
                     throw new Exception("Quadrans can range only from 1 to 4");
-                if (xCoord < 0 || yCoord < 0)
-                    throw new Exception("Coords cant be less than zero");
+                if (xCoord < 1 || yCoord < 1)
+                    throw new Exception("Coords cant be less than one");
+                if (Math.Abs(xCoord) > _quadrantSize || Math.Abs(yCoord) > _quadrantSize)
+                    throw new Exception("Coords can't be ot of quadrant size");
 
                 switch (quadrant)
                 {

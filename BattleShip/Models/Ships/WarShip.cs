@@ -16,6 +16,10 @@ namespace BattleShip.Models
             ShotDamage = shotDamage;
         }
 
+        public WarShip()
+        {
+        }
+
         public bool Shot(Ship target)
         {
             throw new NotImplementedException();

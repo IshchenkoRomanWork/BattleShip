@@ -18,6 +18,10 @@ namespace BattleShip.Models
             ShotDamage = shotDamage;
         }
 
+        public RepairWarShip()
+        {
+        }
+
         public bool Repair(Ship target)
         {
             throw new NotImplementedException();

@@ -9,6 +9,7 @@ namespace BattleShip
         {
             ConsoleWorker consoleWorker = new ConsoleWorker();
             consoleWorker.EntryPoint();
+
         }
     }
 }
