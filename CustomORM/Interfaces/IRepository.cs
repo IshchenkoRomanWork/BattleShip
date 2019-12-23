@@ -8,9 +8,9 @@ namespace CustomORM.Interfaces
     internal interface IRepository
     {
         internal void Create(DBObject dBObject);
-        internal DBObject Get(object id);
+        internal DBObject Get(object id, string tablename);
         internal void Update(DBObject dBObject);
-        internal void Delete(object id);
+        internal void Delete(object id, string tableName);
         
     }
 }
