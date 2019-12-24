@@ -14,7 +14,7 @@ namespace CustomORM.Services
         private string _connectionString;
         private Dictionary<string, string> _tablesAndPrimaryKeys;
 
-        ADORepository(string connectionString)
+        internal ADORepository(string connectionString)
         {
             _connectionString = connectionString;
             var sqlCommand = new SqlCommand();
@@ -43,17 +43,26 @@ namespace CustomORM.Services
             command.Parameters.AddWithValue("@" + dBObject.TableName + "tableName",
                 dBObject.TableName); //Weak part, table name can be same as column name
             StringBuilder commandBuilder = new StringBuilder();
-            commandBuilder.AppendFormat($"INSERT INTO @{0}tableName VALUES( ", dBObject.TableName);
+            commandBuilder.AppendFormat($"INSERT INTO @{0}tableName (", dBObject.TableName);
 
             int count = dBObject.RowValues.Count;
             for (int i = 0; i < count; i++)
             {
-                command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "value", dBObject.ColumnDataTypes[i])
-                { Value = dBObject.RowValues[i] });
+                command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "column", dBObject.ColumnNames[i]));
 
                 commandBuilder.AppendFormat($", @{0}value", dBObject.ColumnNames[i]);
                 if (i != count)
-                    commandBuilder.AppendFormat($", ", dBObject.ColumnNames[i]);
+                    commandBuilder.Append(", ");
+            };
+            commandBuilder.Append(")  VALUES( ");
+            for (int i = 0; i < count; i++)
+            {
+                command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "value", dBObject.ColumnDataTypes[i])
+                    { Value = dBObject.RowValues[i] });
+
+                commandBuilder.AppendFormat($", @{0}value", dBObject.ColumnNames[i]);
+                if (i != count)
+                    commandBuilder.Append(", ");
             };
             command.CommandText = commandBuilder.ToString();
 
@@ -85,7 +94,7 @@ namespace CustomORM.Services
 
                 commandBuilder.AppendFormat($"@{0}column = @{0}value", dBObject.ColumnNames[i]);
                 if (i != count)
-                    commandBuilder.AppendFormat($", ", dBObject.ColumnNames[i]);
+                    commandBuilder.Append(", ");
         };
             command.CommandText = commandBuilder.ToString();
 

@@ -8,7 +8,6 @@ namespace CustomORM.Models
     internal class DTObject
     {
         internal object InnerObject { get; set; }
-        internal Type Type { get; set; }
         internal List<PropertyInfo> Properties { get; set; }
         internal List<FieldInfo> Fields { get; set; }
 

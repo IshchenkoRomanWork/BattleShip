@@ -9,6 +9,6 @@ namespace CustomORM.Interfaces
         public void InsertToDatabase(Model item);
         public Model GetFromDatabase(object id);
         public void UpdateInDatabase(Model item);
-        public void DeleteFromDatabase(Model item);
+        public void DeleteFromDatabase(object id);
     }
 }
