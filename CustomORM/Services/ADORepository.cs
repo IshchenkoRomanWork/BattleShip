@@ -12,46 +12,42 @@ namespace CustomORM.Services
     internal class ADORepository : IRepository //Consider using transactions
     {
         private string _connectionString;
-        private Dictionary<string, string> _tablesAndPrimaryKeys;
+        private Dictionary<string, string> _tablesAndPrimaryKeys = new Dictionary<string, string>();
 
         internal ADORepository(string connectionString)
         {
             _connectionString = connectionString;
             var sqlCommand = new SqlCommand();
-            sqlCommand.CommandText = "SELECT tabcons.TABLE_NAME AS TableName, colcons.COLUMN_NAME AS PrimaryKeyColumn FROM" +
-                                "INFORMATION_SCHEMA.TABLE_CONSTRAINTS tabcons JOIN" +
-                                "INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE colcons" +
-                                "ON colcons.Table_Name = tabcons.Table_Name AND tabcons.Constraint_Name = colcons.Constraint_Name" +
+            sqlCommand.CommandText = "SELECT tabcons.TABLE_NAME AS TableName, colcons.COLUMN_NAME AS PrimaryKeyColumn FROM " +
+                                "INFORMATION_SCHEMA.TABLE_CONSTRAINTS tabcons JOIN " +
+                                "INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE colcons " +
+                                "ON colcons.Table_Name = tabcons.Table_Name AND tabcons.Constraint_Name = colcons.Constraint_Name " +
                                 "WHERE tabcons.Constraint_Type = 'PRIMARY KEY';";
             SqlDataReader reader;
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
+                sqlCommand.Connection = connection;
                 reader = sqlCommand.ExecuteReader();
+                while (reader.Read())
+                {
+                    _tablesAndPrimaryKeys.Add(reader.GetString(0), reader.GetString(1));
+                }
                 connection.Close();
-                
-            }
-            while (reader.Read())
-            {
-                _tablesAndPrimaryKeys.Add(reader.GetString(0), reader.GetString(1));
             }
         }
 
         void IRepository.Create(DBObject dBObject)
         {
             SqlCommand command = new SqlCommand();
-            command.Parameters.AddWithValue("@" + dBObject.TableName + "tableName",
-                dBObject.TableName); //Weak part, table name can be same as column name
             StringBuilder commandBuilder = new StringBuilder();
-            commandBuilder.AppendFormat($"INSERT INTO @{0}tableName (", dBObject.TableName);
+            commandBuilder.Append("INSERT INTO " + dBObject.TableName + " (");
 
             int count = dBObject.RowValues.Count;
             for (int i = 0; i < count; i++)
             {
-                command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "column", dBObject.ColumnNames[i]));
-
-                commandBuilder.AppendFormat($", @{0}value", dBObject.ColumnNames[i]);
-                if (i != count)
+                commandBuilder.Append(dBObject.ColumnNames[i]);
+                if (i != count-1)
                     commandBuilder.Append(", ");
             };
             commandBuilder.Append(")  VALUES( ");
@@ -60,10 +56,11 @@ namespace CustomORM.Services
                 command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "value", dBObject.ColumnDataTypes[i])
                     { Value = dBObject.RowValues[i] });
 
-                commandBuilder.AppendFormat($", @{0}value", dBObject.ColumnNames[i]);
-                if (i != count)
+                commandBuilder.Append("@" + dBObject.ColumnNames[i] + "value");
+                if (i != count-1)
                     commandBuilder.Append(", ");
             };
+            commandBuilder.Append(");");
             command.CommandText = commandBuilder.ToString();
 
             int result;
@@ -81,19 +78,16 @@ namespace CustomORM.Services
         void IRepository.Update(DBObject dBObject)
         {
             SqlCommand command = new SqlCommand();
-            command.Parameters.AddWithValue("@" + dBObject.TableName + "tableName",
-                dBObject.TableName);
             StringBuilder commandBuilder = new StringBuilder();
-            commandBuilder.AppendFormat($"UPDATE @{0}tableName SET ", dBObject.TableName);
+            commandBuilder.Append("UPDATE " + dBObject.TableName+ " SET ");
             int count = dBObject.RowValues.Count;
             for (int i = 0; i < count; i++)
             {
-                command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "column", dBObject.ColumnNames[i]));
                 command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "value", dBObject.ColumnDataTypes[i])
                 { Value = dBObject.RowValues[i] });
 
-                commandBuilder.AppendFormat($"@{0}column = @{0}value", dBObject.ColumnNames[i]);
-                if (i != count)
+                commandBuilder.Append(dBObject.ColumnNames[i]+ " = @" + dBObject.ColumnNames[i] + "value");
+                if (i != count-1)
                     commandBuilder.Append(", ");
         };
             command.CommandText = commandBuilder.ToString();
@@ -141,15 +135,16 @@ namespace CustomORM.Services
                 command.Connection = connection;
                 connection.Open();
                 reader = command.ExecuteReader();
+                int count = reader.FieldCount;
+                reader.Read();
+                for (int i = 0; i < count; i++)
+                {
+                    dbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType), reader.GetColumnSchema()[i].DataTypeName, true));
+                    dbo.ColumnNames.Add(reader.GetColumnSchema()[i].ColumnName);
+                    dbo.RowValues.Add(reader.GetValue(i));
+                }
                 connection.Close();
-            }
-            int count = reader.FieldCount;
-            for (int i = 0; i < count; i++)
-            {
-                dbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType), reader.GetColumnSchema()[i].DataTypeName));
-                dbo.ColumnNames.Add(reader.GetColumnSchema()[i].ColumnName);
-                dbo.RowValues.Add(reader.GetValue(i));
-            }
+            } 
             dbo.TableName = tableName;
             return dbo;
         }

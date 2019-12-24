@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CustomORM.Interfaces
 {
-    interface IORM<Model>
+    public interface IORM<Model> where Model : new()
     {
         public void InsertToDatabase(Model item);
         public Model GetFromDatabase(object id);

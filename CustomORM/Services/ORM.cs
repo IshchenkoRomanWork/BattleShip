@@ -10,7 +10,7 @@ using CustomORM.Models.Attributes;
 
 namespace CustomORM.Services
 {
-    public class ORM<Model> : IORM<Model>
+    public class ORM<Model> : IORM<Model> where Model : new()
     {
         private IRepository _repository { get; set;}
         private IMapper<Model> _mapper;
@@ -34,7 +34,9 @@ namespace CustomORM.Services
 
         public Model GetFromDatabase(object id)
         {
-            throw new NotImplementedException();
+            var dbo = _repository.Get(id, _helper.GetDataBaseAttribute(typeof(Model)).DBName);
+            var dto = _mapper.GetDtoFrom(dbo);
+            return (Model)dto.InnerObject;
         }
 
         public void InsertToDatabase(Model item)

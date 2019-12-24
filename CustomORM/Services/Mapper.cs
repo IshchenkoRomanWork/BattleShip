@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace CustomORM.Services
 {
-    internal class Mapper<Model> : IMapper<Model>
+    internal class Mapper<Model> : IMapper<Model> where Model : new()
     {
         private AttributeHelper _helper;
 
@@ -30,7 +30,7 @@ namespace CustomORM.Services
 
                 columnNames.Add(colAttrib.DBName);
                 columnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType),
-                    colAttrib.DBDataType));
+                    TrimCases(colAttrib.DBDataType), true));
                 rowValues.Add(property.GetValue(item.InnerObject));
             }
             foreach (var field in item.Fields)
@@ -38,7 +38,7 @@ namespace CustomORM.Services
                 ColumnAttribute colAttrib = (ColumnAttribute)_helper.GetDataBaseAttribute(field);
                 columnNames.Add(colAttrib.DBName);
                 columnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType),
-                   colAttrib.DBDataType));
+                   TrimCases(colAttrib.DBDataType), true));
                 rowValues.Add(field.GetValue(item.InnerObject));
             }
             return new DBObject()
@@ -57,7 +57,7 @@ namespace CustomORM.Services
             var propertyList = fullPropertyList.Where(p=> _helper.HasAttribute(p, typeof(ColumnAttribute))).ToList();
             var fieldList = fullFieldList.Where(f => _helper.HasAttribute(f, typeof(ColumnAttribute))).ToList();
 
-            var innerObject = (Model)new object();
+            var innerObject = new Model();
             foreach(var property in propertyList)
             {
                 int index = item.ColumnNames.FindIndex(cName => cName == _helper.GetDataBaseAttribute(property).DBName);
@@ -76,7 +76,11 @@ namespace CustomORM.Services
                 Properties = propertyList,
                 Fields = fieldList
             };
-            
+        }
+        private string TrimCases(string str)
+        {
+            var chars = str.TakeWhile(c => c != '(');
+            return String.Concat(chars);
         }
     }
 }

@@ -1,0 +1,22 @@
+﻿using CustomORM.Models.Attributes;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace CustomORM.Test
+{
+    [Table("TestTable")]
+    public class TestClass
+    {
+        [Column("TID", "int")]
+        public int Id { get; set; }
+        [Column("IntVal", "int")]
+        public int IntValue { get; set; }
+        [Column("StringVal", "nvarchar(100)")]
+        public string stringValue { get; set; }
+
+        [IsForeignKey]
+        public SecondTestClass Second { get; set; }
+
+    }
+}

@@ -14,7 +14,9 @@ namespace CustomORM.Models
 
         public DBObject()
         {
-
+            RowValues = new List<object>();
+            ColumnNames = new List<string>();
+            ColumnDataTypes = new List<SqlDbType>();
         }
     }
 }

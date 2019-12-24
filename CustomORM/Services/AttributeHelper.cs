@@ -21,7 +21,7 @@ namespace CustomORM.Services
 
         internal bool HasAttribute(MemberInfo info, Type attributeType)
         {
-            return info.GetCustomAttribute(attributeType, false) == null;
+            return info.GetCustomAttribute(attributeType, false) != null;
         }
         internal List<MemberInfo> GetAllForeignKeys(Type type)
         {

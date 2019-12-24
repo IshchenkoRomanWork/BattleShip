@@ -10,6 +10,7 @@ namespace BattleShip.Models
         public int Length { get; set; }
         public int Speed { get; set; }
         public int HitPoints { get; set; }
+        public int id { get; set; }
 
         public Ship(int length, int speed, int hitPoints)
         {

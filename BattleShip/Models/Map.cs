@@ -7,6 +7,7 @@ namespace BattleShip.Models
 {
     public class Map
     {
+        public int Id { get; set; }
         private List<(ShipLocation, Ship)> _allShips;
 
         private List<(int, int)> _occupiedCoords;
