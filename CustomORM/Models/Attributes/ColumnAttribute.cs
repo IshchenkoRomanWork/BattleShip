@@ -9,10 +9,15 @@ namespace CustomORM.Models.Attributes
     public class ColumnAttribute : DataBaseAttribute
     {
         internal string DBDataType { get; set; }
+        internal bool IsPrimaryKey { get; set; }
 
-        public ColumnAttribute(string columnName, string dbDataType) : base(columnName)
+        public ColumnAttribute(string columnName, string dbDataType, bool isPrimaryKey) : base(columnName)
         {
             DBDataType = dbDataType;
+            IsPrimaryKey = isPrimaryKey;
+        }
+        public ColumnAttribute(string columnName, string dbDataType) : this(columnName, dbDataType, false)
+        {
         }
     }
 }

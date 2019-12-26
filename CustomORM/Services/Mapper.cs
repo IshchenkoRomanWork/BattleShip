@@ -7,6 +7,7 @@ using System.Data;
 using System.Reflection;
 using System.Text;
 using System.Linq;
+using System.Collections;
 
 namespace CustomORM.Services
 {
@@ -14,57 +15,70 @@ namespace CustomORM.Services
     {
         private AttributeHelper _helper;
 
-        public Mapper()
+        internal Mapper()
         {
             _helper = new AttributeHelper();
         }
+
         DBObject IMapper<Model>.GetDboFrom(DTObject item)
         {
-            var tableName = (Attribute.GetCustomAttribute(typeof(Model), typeof(TableAttribute)) as TableAttribute).DBName;
+            var tableName = (Attribute.GetCustomAttribute(item.InnerObject.GetType(), typeof(TableAttribute)) as TableAttribute).DBName;
+            var nonFKProperties = item.Properties.Where(p => !_helper.HasAttribute(p, typeof(IsForeignKeyAttribute)));
+            var nonFKFields = item.Fields.Where(f => !_helper.HasAttribute(f, typeof(IsForeignKeyAttribute)));
             var columnNames = new List<string>();
             var columnDataTypes = new List<SqlDbType>();
             var rowValues = new List<object>();
-            foreach(var property in item.Properties)
+            object primaryKey = null;
+
+            foreach (var property in nonFKProperties)
             {
                 ColumnAttribute colAttrib = (ColumnAttribute)_helper.GetDataBaseAttribute(property);
-
+                rowValues.Add(property.GetValue(item.InnerObject));
                 columnNames.Add(colAttrib.DBName);
                 columnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType),
                     TrimCases(colAttrib.DBDataType), true));
-                rowValues.Add(property.GetValue(item.InnerObject));
+                if(_helper.IsPrimaryKey(property))
+                {
+                    primaryKey = property.GetValue(item.InnerObject);
+                }
             }
-            foreach (var field in item.Fields)
+            foreach (var field in nonFKFields)
             {
                 ColumnAttribute colAttrib = (ColumnAttribute)_helper.GetDataBaseAttribute(field);
                 columnNames.Add(colAttrib.DBName);
                 columnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType),
                    TrimCases(colAttrib.DBDataType), true));
                 rowValues.Add(field.GetValue(item.InnerObject));
+                if (_helper.IsPrimaryKey(field))
+                {
+                    primaryKey = field.GetValue(item.InnerObject);
+                }
             }
-            return new DBObject()
+            return new DBObject
             {
                 TableName = tableName,
-                ColumnNames = columnNames,
+                PrimaryKey = primaryKey,
                 ColumnDataTypes = columnDataTypes,
+                ColumnNames = columnNames,
                 RowValues = rowValues
             };
         }
 
-        DTObject IMapper<Model>.GetDtoFrom(DBObject item)
+        DTObject IMapper<Model>.GetDtoFrom(DBObject item, Type type)
         {
-            var fullPropertyList = new List<PropertyInfo>(typeof(Model).GetProperties());
-            var fullFieldList = new List<FieldInfo>(typeof(Model).GetFields());
-            var propertyList = fullPropertyList.Where(p=> _helper.HasAttribute(p, typeof(ColumnAttribute))).ToList();
-            var fieldList = fullFieldList.Where(f => _helper.HasAttribute(f, typeof(ColumnAttribute))).ToList();
+            var fullPropertyList = new List<PropertyInfo>(type.GetProperties());
+            var fullFieldList = new List<FieldInfo>(type.GetFields());
+            var nonFKPropertyList = fullPropertyList.Where(p => _helper.HasAttribute(p, typeof(ColumnAttribute)) && !_helper.HasAttribute(p, typeof(IsForeignKeyAttribute))).ToList();
+            var nonFKFieldList = fullFieldList.Where(f => _helper.HasAttribute(f, typeof(ColumnAttribute)) && !_helper.HasAttribute(f, typeof(IsForeignKeyAttribute))).ToList();
 
-            var innerObject = new Model();
-            foreach(var property in propertyList)
+            object innerObject = Activator.CreateInstance(type);
+            foreach (var property in nonFKPropertyList)
             {
                 int index = item.ColumnNames.FindIndex(cName => cName == _helper.GetDataBaseAttribute(property).DBName);
                 var value = item.RowValues[index];
                 property.SetValue(innerObject, value);
             }
-            foreach (var field in fieldList)
+            foreach (var field in nonFKFieldList)
             {
                 int index = item.ColumnNames.FindIndex(cName => cName == _helper.GetDataBaseAttribute(field).DBName);
                 var value = item.RowValues[index];
@@ -73,14 +87,17 @@ namespace CustomORM.Services
             return new DTObject()
             {
                 InnerObject = innerObject,
-                Properties = propertyList,
-                Fields = fieldList
+                Properties = nonFKPropertyList,
+                Fields = nonFKFieldList
             };
         }
-        private string TrimCases(string str)
+        internal string TrimCases(string str)
         {
             var chars = str.TakeWhile(c => c != '(');
-            return String.Concat(chars);
+            return string.Concat(chars);
         }
+
+        
+
     }
 }

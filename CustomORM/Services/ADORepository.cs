@@ -47,17 +47,17 @@ namespace CustomORM.Services
             for (int i = 0; i < count; i++)
             {
                 commandBuilder.Append(dBObject.ColumnNames[i]);
-                if (i != count-1)
+                if (i != count - 1)
                     commandBuilder.Append(", ");
             };
             commandBuilder.Append(")  VALUES( ");
             for (int i = 0; i < count; i++)
             {
                 command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "value", dBObject.ColumnDataTypes[i])
-                    { Value = dBObject.RowValues[i] });
+                { Value = dBObject.RowValues[i] });
 
                 commandBuilder.Append("@" + dBObject.ColumnNames[i] + "value");
-                if (i != count-1)
+                if (i != count - 1)
                     commandBuilder.Append(", ");
             };
             commandBuilder.Append(");");
@@ -71,42 +71,39 @@ namespace CustomORM.Services
                 result = command.ExecuteNonQuery();
                 connection.Close();
             }
-            if (result != 1)
-                throw new Exception("Database error inserting");
 
         }
         void IRepository.Update(DBObject dBObject)
-        {
+        {   
             SqlCommand command = new SqlCommand();
             StringBuilder commandBuilder = new StringBuilder();
-            commandBuilder.Append("UPDATE " + dBObject.TableName+ " SET ");
+            commandBuilder.Append("UPDATE " + dBObject.TableName + " SET ");
             int count = dBObject.RowValues.Count;
             for (int i = 0; i < count; i++)
             {
                 command.Parameters.Add(new SqlParameter("@" + dBObject.ColumnNames[i] + "value", dBObject.ColumnDataTypes[i])
                 { Value = dBObject.RowValues[i] });
 
-                commandBuilder.Append(dBObject.ColumnNames[i]+ " = @" + dBObject.ColumnNames[i] + "value");
-                if (i != count-1)
+                commandBuilder.Append(dBObject.ColumnNames[i] + " = @" + dBObject.ColumnNames[i] + "value");
+                if (i != count - 1)
                     commandBuilder.Append(", ");
-        };
+            };
+            command.Parameters.AddWithValue("@id", dBObject.PrimaryKey);
+            commandBuilder.Append(" WHERE " + _tablesAndPrimaryKeys[dBObject.TableName] + "= @id");
             command.CommandText = commandBuilder.ToString();
 
-            int result;
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
                 command.Connection = connection;
                 connection.Open();
-                result = command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
                 connection.Close();
             }
-            if (result != 1)
-                throw new Exception("Database error updating");
 
         }
         void IRepository.Delete(object id, string tablename)
         {
-            
+
             SqlCommand command = new SqlCommand();
             command.Parameters.AddWithValue("@id", id);
             command.CommandText = "DELETE FROM " + tablename + " WHERE " + _tablesAndPrimaryKeys[tablename] + "= @id";
@@ -119,7 +116,7 @@ namespace CustomORM.Services
                 result = command.ExecuteNonQuery();
                 connection.Close();
             }
-            if(result != 1)
+            if (result != 1)
                 throw new Exception("Database error inserting");
         }
         DBObject IRepository.Get(object id, string tableName)
@@ -144,9 +141,95 @@ namespace CustomORM.Services
                     dbo.RowValues.Add(reader.GetValue(i));
                 }
                 connection.Close();
-            } 
+            }
             dbo.TableName = tableName;
             return dbo;
+        }
+
+
+        List<DBObject> IRepository.GetAll(string tableName)
+        {
+            List<DBObject> dboList = new List<DBObject>();
+            SqlCommand command = new SqlCommand();
+            command.CommandText = "SELECT * FROM " + tableName;
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                command.Connection = connection;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                int count = reader.FieldCount;
+                while (reader.Read())
+                {
+                    var dbo = new DBObject();
+                    dbo.TableName = tableName;
+                    for (int i = 0; i < count; i++)
+                    {
+                        dbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType), reader.GetColumnSchema()[i].DataTypeName, true));
+                        dbo.ColumnNames.Add(reader.GetColumnSchema()[i].ColumnName);
+                        dbo.RowValues.Add(reader.GetValue(i));
+                    }
+                    dboList.Add(dbo);
+                }
+                connection.Close();
+            }
+            return dboList;
+        }
+
+        List<DBObject> IRepository.GetAllWithForeignKey(string firstTableName, object foreignKeyValue, string secondTableName, bool toMany)
+        {
+            List<DBObject> dboList = new List<DBObject>();
+            SqlCommand command = new SqlCommand();
+            string foreignkey;
+            if (toMany)
+            {
+                foreignkey = _tablesAndPrimaryKeys[firstTableName];
+            }
+            else
+            { 
+                foreignkey = _tablesAndPrimaryKeys[secondTableName];
+            }
+            command.Parameters.AddWithValue("@foreignKeyValue", foreignKeyValue);
+            command.CommandText = "SELECT " + secondTableName + ".* FROM " + firstTableName +
+                " JOIN " + secondTableName + " ON " + firstTableName + "." + foreignkey + " = " + secondTableName + "." + foreignkey + 
+                " WHERE " + secondTableName + "." + foreignkey + " = @foreignKeyValue";
+            //Need to fix situation where foreign key column name in second table is different
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                command.Connection = connection;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                int count = reader.FieldCount;
+                while (reader.Read())
+                {
+                    var dbo = new DBObject();
+                    dbo.TableName = secondTableName;
+                    for (int i = 0; i < count; i++)
+                    {
+                        dbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType), reader.GetColumnSchema()[i].DataTypeName, true));
+                        dbo.ColumnNames.Add(reader.GetColumnSchema()[i].ColumnName);
+                        dbo.RowValues.Add(reader.GetValue(i));
+                    }
+                    dboList.Add(dbo);
+                }
+                connection.Close();
+            }
+            return dboList;
+        }
+
+        bool IRepository.Exists(DBObject dBObject)
+        {
+            SqlCommand command = new SqlCommand();
+            command.Parameters.AddWithValue("@id", dBObject.PrimaryKey);
+            command.CommandText = "SELECT * FROM " + dBObject.TableName + " WHERE " + _tablesAndPrimaryKeys[dBObject.TableName] + "= @id";
+            bool hasRows = false;
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            {
+                command.Connection = connection;
+                connection.Open();
+                hasRows = command.ExecuteReader().HasRows;
+                connection.Close();
+            }
+            return hasRows;
         }
     }
 }

@@ -3,6 +3,7 @@ using CustomORM.Interfaces;
 using CustomORM.Services;
 using CustomORM.Test;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 
@@ -21,10 +22,20 @@ namespace BattleShip
             //    IntValue = 200,
             //    stringValue = "mystring"
             //};
-            TestClass tc = new TestClass();
+            //TestClass tc = new TestClass() { Id = 320, IntValue = 400, stringValue = "ListString" };
+            //tc.SecondList = new List<SecondTestClass>() 
+            //{
+            //    new SecondTestClass() {boolValue=false, Id=11},
+            //    new SecondTestClass() {boolValue=true, Id =22 },
+            //    new SecondTestClass() {boolValue=true, Id =33 },
+            //    new SecondTestClass() {boolValue=true, Id = 44 }
+            //};
 
+            TestClass tc = new TestClass();
             IORM<TestClass> orm = new ORM<TestClass>("Server=ISHCHENKO;Database=TestDatabase;Trusted_Connection=True;");
-            orm.UpdateInDatabase(new TestClass() { Id = 100, IntValue = 300, stringValue = "myNewString" });
+            tc = orm.GetFromDatabase(320);
+            Console.WriteLine(tc.SecondList[2].Id);
+
 
             //using (SqlConnection connection = new SqlConnection("Server = ISHCHENKO; Database = TestDatabase; Trusted_Connection = True;"))
             //{
