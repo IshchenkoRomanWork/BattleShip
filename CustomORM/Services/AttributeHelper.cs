@@ -1,8 +1,11 @@
-﻿using CustomORM.Models.Abstract;
+﻿using CustomORM.Interfaces;
+using CustomORM.Models;
+using CustomORM.Models.Abstract;
 using CustomORM.Models.Attributes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 
@@ -18,14 +21,13 @@ namespace CustomORM.Services
             }
             return null;
         }
-
         internal bool HasAttribute(MemberInfo info, Type attributeType)
         {
             return info.GetCustomAttribute(attributeType, false) != null;
         }
-        internal bool IsPrimaryKey(MemberInfo info)
+        internal bool IsPrimaryKey(IPropertyFieldInfo info)
         {
-            var attributes = info.GetCustomAttributes();
+            var attributes = info.AsMemberInfo().GetCustomAttributes();
             foreach (var attrib in attributes)
             {
                 if (attrib.GetType() == typeof(ColumnAttribute) && ((ColumnAttribute)attrib).IsPrimaryKey)
@@ -33,75 +35,61 @@ namespace CustomORM.Services
             }
             return false;
         }
-        internal List<MemberInfo> GetAllForeignKeys(Type type)
+        internal List<IPropertyFieldInfo> GetAllForeignKeys(Type type)
         {
-            var foreignKeys = new List<MemberInfo>();
-            var properties = new List<PropertyInfo>(type.GetProperties());
-            var fields = new List<FieldInfo>(type.GetFields());
-            foreach (var property in properties)
+            var foreignKeys = new List<IPropertyFieldInfo>();
+            var propertyFields = GetPropertyFieldList(type);
+            foreach (var propertyField in propertyFields)
             {
-                var foreignKeyAttributeList = property.GetCustomAttributes(typeof(IsForeignKeyAttribute), false);
+                var foreignKeyAttributeList = propertyField.AsMemberInfo().GetCustomAttributes(typeof(IsForeignKeyAttribute), false);
                 if (foreignKeyAttributeList.Length != 0)
                 {
-                    foreignKeys.Add(property);
-                }
-            }
-            foreach (var field in fields)
-            {
-                var foreignKeyAttributeList = field.GetCustomAttributes(typeof(IsForeignKeyAttribute), false);
-                if (foreignKeyAttributeList.Length != 0)
-                {
-                    foreignKeys.Add(field);
+                    foreignKeys.Add(propertyField);
                 }
             }
             return foreignKeys;
         }
-
-        public bool IsToMany(MemberInfo foreignKey)
+        public bool IsToMany(IPropertyFieldInfo foreignKey)
         {
-            Type memberAsType = null;
-            switch (foreignKey.MemberType)
-            {
-                case MemberTypes.Property:
-                    var property = foreignKey as PropertyInfo;
-                    memberAsType = property.PropertyType;
-                    break;
-                case MemberTypes.Field:
-                    var field = foreignKey as PropertyInfo;
-                    memberAsType = field.PropertyType;
-                    break;
-            }
+            Type memberAsType = foreignKey.GetObjectType();
             var ifaces = memberAsType.GetInterfaces();
             bool isenum = ifaces.Any(i => i == typeof(ICollection));
             return isenum;
         }
-
         public object GetId(object model)
         {
             var type = model.GetType();
-            var properties = type.GetProperties();
-            var fields = type.GetFields();
-            foreach (var property in properties)
+            var propertiesFields = GetPropertyFieldList(type);
+            foreach (var propertyField in propertiesFields)
             {
-                if (IsPrimaryKey(property))
+                if (IsPrimaryKey(propertyField))
                 {
-                    return property.GetValue(model);
-                }
-            }
-            foreach (var field in fields)
-            {
-                if (IsPrimaryKey(field))
-                {
-                    return field.GetValue(model);
+                    return propertyField.GetValue(model);
                 }
             }
             return null;
         }
-
         internal string TrimCases(string str)
         {
             var chars = str.TakeWhile(c => c != '(');
             return String.Concat(chars);
         }
+        internal IEnumerable<IPropertyFieldInfo> GetPropertyFieldList(Type type)
+        {
+            var propertyList = new List<PropertyInfo>(type.GetProperties())
+                .Where(p => HasAttribute(p, typeof(ColumnAttribute))).ToList();
+            var fieldList = new List<FieldInfo>(type.GetFields())
+                .Where(f => HasAttribute(f, typeof(ColumnAttribute))).ToList();
+            List<IPropertyFieldInfo> propertyFields = new List<IPropertyFieldInfo>();
+            propertyFields.AddRange(propertyList.Select(p => new PropertyFieldInfo(p)));
+            propertyFields.AddRange(fieldList.Select(f => new PropertyFieldInfo(f)));
+            return propertyFields;
+        }
+        internal SqlDbType ParseToSqlDbType(string dBType)
+        {
+            return (SqlDbType)Enum.Parse(typeof(SqlDbType), TrimCases(dBType), true);
+        }
+
+
     }
 }

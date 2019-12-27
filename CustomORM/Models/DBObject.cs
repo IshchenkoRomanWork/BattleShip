@@ -19,5 +19,13 @@ namespace CustomORM.Models
             ColumnNames = new List<string>();
             ColumnDataTypes = new List<SqlDbType>();
         }
+
+        internal void Add(object rowValue, string columnName, SqlDbType columnDataType)
+        {
+
+            RowValues.Add(rowValue);
+            ColumnNames.Add(columnName);
+            ColumnDataTypes.Add(columnDataType);
+        }
     }
 }

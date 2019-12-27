@@ -52,13 +52,13 @@ namespace CustomORM.Services
         public void UpdateInDatabase(Model item)
         {
             List<DBObject> cohesionList = GetDBOInCohesion(item);
-            if(!_repository.Exists(cohesionList[0]))
+            if (!_repository.Exists(cohesionList[0]))
             {
                 throw new Exception("There's no according model in db");
             }
             foreach (var dbo in cohesionList)
             {
-                if(_repository.Exists(dbo))
+                if (_repository.Exists(dbo))
                 {
                     _repository.Update(dbo);
                 }
@@ -79,53 +79,25 @@ namespace CustomORM.Services
             var toOneForeignKeys = foreignKeys.Where(fk => !_helper.IsToMany(fk));
             foreach (var foreignKey in toOneForeignKeys)
             {
-                object foreignKeyValue = null;
-                switch (foreignKey.MemberType)
-                {
-                    case MemberTypes.Property:
-                        var property = foreignKey as PropertyInfo;
-                        foreignKeyValue = property.GetValue(item);
-                        break;
-                    case MemberTypes.Field:
-                        var field = foreignKey as PropertyInfo;
-                        foreignKeyValue = field.GetValue(item);
-                        break;
-                }
-                ColumnAttribute colAttrib = (ColumnAttribute)_helper.GetDataBaseAttribute(foreignKey);
+                object foreignKeyValue = foreignKey.GetValue(item);
+                ColumnAttribute colAttrib = (ColumnAttribute)_helper.GetDataBaseAttribute(foreignKey.AsMemberInfo());
 
                 finalList.AddRange(GetDBOInCohesion(foreignKeyValue));
-                dbo.RowValues.Add(_helper.GetId(foreignKeyValue));
-                dbo.ColumnNames.Add(colAttrib.DBName);
-                dbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType),
-                    _helper.TrimCases(colAttrib.DBDataType), true));
+                dbo.Add(_helper.GetId(foreignKeyValue), colAttrib.DBName, _helper.ParseToSqlDbType(colAttrib.DBDataType));
 
             }
             finalList.Add(dbo); //Position is relevant due to foreign key constraint conflicts
             foreach (var foreignKey in toManyForeignKeys)
             {
-                object foreignKeyValue = null;
-                switch (foreignKey.MemberType)
-                {
-                    case MemberTypes.Property:
-                        var property = foreignKey as PropertyInfo;
-                        foreignKeyValue = property.GetValue(item);
-                        break;
-                    case MemberTypes.Field:
-                        var field = foreignKey as PropertyInfo;
-                        foreignKeyValue = field.GetValue(item);
-                        break;
-                }
-                ColumnAttribute colAttrib = (ColumnAttribute)_helper.GetDataBaseAttribute(foreignKey);
+                object foreignKeyValue = foreignKey.GetValue(item);
+                ColumnAttribute colAttrib = (ColumnAttribute)_helper.GetDataBaseAttribute(foreignKey.AsMemberInfo());
 
                 foreach (var element in foreignKeyValue as ICollection)
-                { 
+                {
                     var innerList = GetDBOInCohesion(element);
                     finalList.AddRange(innerList);
                     var toManydbo = innerList[innerList.Count - 1];
-                    toManydbo.ColumnNames.Add(colAttrib.DBName);
-                    toManydbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType),
-                        _helper.TrimCases(colAttrib.DBDataType), true));
-                    toManydbo.RowValues.Add(_helper.GetId(item));
+                    toManydbo.Add(_helper.GetId(item), colAttrib.DBName, _helper.ParseToSqlDbType(colAttrib.DBDataType));
                 }
             }
             return finalList;
@@ -139,73 +111,36 @@ namespace CustomORM.Services
             var foreignKeys = _helper.GetAllForeignKeys(model.GetType());
             foreach (var foreignKey in foreignKeys)
             {
-                Type foreignKeyType = null;
-                switch (foreignKey.MemberType)
-                {
-                    case MemberTypes.Property:
-                        var property = foreignKey as PropertyInfo;
-                        foreignKeyType = property.PropertyType;
-                        break;
-                    case MemberTypes.Field:
-                        var field = foreignKey as FieldInfo;
-                        foreignKeyType = field.FieldType;
-                        break;
-                }
+                Type foreignKeyType = foreignKey.GetObjectType();
                 object foreignKeyValue;
                 if (_helper.IsToMany(foreignKey)) //foreignKeyValue is empty
                 {
-                    var elementType = foreignKeyType.GenericTypeArguments[0];
-                    var dboForeignKeyList = _repository.GetAllWithForeignKey(_helper.GetDataBaseAttribute(model.GetType()).DBName,
-                        _helper.GetId(model), _helper.GetDataBaseAttribute(elementType).DBName, true);
-                    foreignKeyValue = dboForeignKeyList.Select(dbo => GetDTOInCohesion(dbo, elementType).InnerObject).ToList();
-                    object castToDtoList = null;
-                    switch (foreignKey.MemberType)
+                    var foreignKeyElementType = foreignKeyType.GenericTypeArguments[0];
+                    var foreignKeyElementDboList = _repository.GetAllWithForeignKey(_helper.GetDataBaseAttribute(model.GetType()).DBName,
+                        _helper.GetId(model), _helper.GetDataBaseAttribute(foreignKeyElementType).DBName, true);
+                    foreignKeyValue = foreignKeyElementDboList.Select(dbo => GetDTOInCohesion(dbo, foreignKeyElementType).InnerObject).ToList();
+                    MethodInfo foreignKeyAddMethod = foreignKeyType.GetMethod("Add");
+                    object castToDtoList = Activator.CreateInstance(foreignKeyType);
+                    foreach (var dtoForeignKeyElement in foreignKeyValue as ICollection)
                     {
-                        case MemberTypes.Property:
-                            PropertyInfo propertyFKtype = foreignKey as PropertyInfo;
-                            MethodInfo pfkeyAdd = propertyFKtype.PropertyType.GetMethod("Add");
-                            castToDtoList = Activator.CreateInstance(propertyFKtype.PropertyType);
-                            foreach (var dtoForeignKeyElement in foreignKeyValue as ICollection)
-                            {
-                                pfkeyAdd.Invoke(castToDtoList, new object[] { Convert.ChangeType(dtoForeignKeyElement, elementType) });
-                            }        
-                            (foreignKey as PropertyInfo).SetValue(dto.InnerObject, castToDtoList);
-                            break;
-                        case MemberTypes.Field:
-                            FieldInfo fieldFKtype = foreignKey as FieldInfo;
-                            MethodInfo ffkeyAdd = fieldFKtype.FieldType.GetMethod("Add");
-                            castToDtoList = Activator.CreateInstance(fieldFKtype.FieldType);
-                            foreach (var dtoForeignKeyElement in foreignKeyValue as ICollection)
-                            {
-                                ffkeyAdd.Invoke(castToDtoList, new object[] { Convert.ChangeType(dtoForeignKeyElement, elementType) });
-                            }
-                            (foreignKey as PropertyInfo).SetValue(dto.InnerObject, castToDtoList);
-                            break;
-                            break;
+                        foreignKeyAddMethod.Invoke(castToDtoList, new object[] { Convert.ChangeType(dtoForeignKeyElement, foreignKeyElementType) });
                     }
+                    foreignKey.SetValue(dto.InnerObject, castToDtoList);
+                    break;
                 }
                 else
                 {
-                    object fkId = null;
+                    object foreignKeyId = null;
                     for (int i = 0; i < dbo.ColumnNames.Count; i++)
                     {
-                        if (dbo.ColumnNames[i] == _helper.GetDataBaseAttribute(foreignKey).DBName)
+                        if (dbo.ColumnNames[i] == _helper.GetDataBaseAttribute(foreignKey.AsMemberInfo()).DBName)
                         {
-                            fkId = dbo.RowValues[i];
+                            foreignKeyId = dbo.RowValues[i];
                         }
-
                     }
-                    var fkDbo = _repository.Get(fkId, _helper.GetDataBaseAttribute(foreignKeyType).DBName);
-                    foreignKeyValue = GetDTOInCohesion(fkDbo, foreignKeyType).InnerObject;
-                    switch (foreignKey.MemberType)
-                    {
-                        case MemberTypes.Property:
-                            (foreignKey as PropertyInfo).SetValue(dto.InnerObject, foreignKeyValue);
-                            break;
-                        case MemberTypes.Field:
-                            (foreignKey as FieldInfo).SetValue(dto.InnerObject, foreignKeyValue);
-                            break;
-                    }
+                    var foreignKeyDBOValue = _repository.Get(foreignKeyId, _helper.GetDataBaseAttribute(foreignKeyType).DBName);
+                    foreignKeyValue = GetDTOInCohesion(foreignKeyDBOValue, foreignKeyType).InnerObject;
+                    foreignKey.SetValue(dto.InnerObject, foreignKeyValue);
                 }
             }
             return dto;
@@ -213,15 +148,11 @@ namespace CustomORM.Services
 
         private DTObject GetDTOFromModel(object item)
         {
-            var propertyList = new List<PropertyInfo>(item.GetType().GetProperties())
-                .Where(p => _helper.HasAttribute(p, typeof(ColumnAttribute))).ToList();
-            var fieldList = new List<FieldInfo>(item.GetType().GetFields())
-                .Where(f => _helper.HasAttribute(f, typeof(ColumnAttribute))).ToList();
+            var propertyFields = _helper.GetPropertyFieldList(item.GetType());
             return new DTObject()
             {
                 InnerObject = item,
-                Properties = propertyList,
-                Fields = fieldList
+                PropertiesFields = propertyFields.ToList()
             };
         }
     }

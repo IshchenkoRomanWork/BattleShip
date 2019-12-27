@@ -145,8 +145,6 @@ namespace CustomORM.Services
             dbo.TableName = tableName;
             return dbo;
         }
-
-
         List<DBObject> IRepository.GetAll(string tableName)
         {
             List<DBObject> dboList = new List<DBObject>();
@@ -174,7 +172,6 @@ namespace CustomORM.Services
             }
             return dboList;
         }
-
         List<DBObject> IRepository.GetAllWithForeignKey(string firstTableName, object foreignKeyValue, string secondTableName, bool toMany)
         {
             List<DBObject> dboList = new List<DBObject>();
@@ -215,7 +212,6 @@ namespace CustomORM.Services
             }
             return dboList;
         }
-
         bool IRepository.Exists(DBObject dBObject)
         {
             SqlCommand command = new SqlCommand();
