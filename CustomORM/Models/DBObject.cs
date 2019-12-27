@@ -27,5 +27,15 @@ namespace CustomORM.Models
             ColumnNames.Add(columnName);
             ColumnDataTypes.Add(columnDataType);
         }
+        internal object GetValueByColumnName(string columnName)
+        {
+            for(int i = 0; i< ColumnNames.Count; i++)
+            {
+                if (ColumnNames[i] == columnName)
+                    return RowValues[i];
+            }
+            return null;
+        }
+
     }
 }

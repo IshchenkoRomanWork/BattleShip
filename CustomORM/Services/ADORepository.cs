@@ -11,11 +11,13 @@ namespace CustomORM.Services
 {
     internal class ADORepository : IRepository //Consider using transactions
     {
+        private AttributeHelper _helper;
         private string _connectionString;
         private Dictionary<string, string> _tablesAndPrimaryKeys = new Dictionary<string, string>();
 
         internal ADORepository(string connectionString)
         {
+            _helper = new AttributeHelper();
             _connectionString = connectionString;
             var sqlCommand = new SqlCommand();
             sqlCommand.CommandText = "SELECT tabcons.TABLE_NAME AS TableName, colcons.COLUMN_NAME AS PrimaryKeyColumn FROM " +
@@ -107,7 +109,7 @@ namespace CustomORM.Services
             SqlCommand command = new SqlCommand();
             command.Parameters.AddWithValue("@id", id);
             command.CommandText = "DELETE FROM " + tablename + " WHERE " + _tablesAndPrimaryKeys[tablename] + "= @id";
-
+            
             int result;
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
@@ -136,9 +138,7 @@ namespace CustomORM.Services
                 reader.Read();
                 for (int i = 0; i < count; i++)
                 {
-                    dbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType), reader.GetColumnSchema()[i].DataTypeName, true));
-                    dbo.ColumnNames.Add(reader.GetColumnSchema()[i].ColumnName);
-                    dbo.RowValues.Add(reader.GetValue(i));
+                    dbo.Add(reader.GetValue(i), reader.GetColumnSchema()[i].ColumnName, _helper.ParseToSqlDbType(reader.GetColumnSchema()[i].DataTypeName));
                 }
                 connection.Close();
             }
@@ -162,9 +162,7 @@ namespace CustomORM.Services
                     dbo.TableName = tableName;
                     for (int i = 0; i < count; i++)
                     {
-                        dbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType), reader.GetColumnSchema()[i].DataTypeName, true));
-                        dbo.ColumnNames.Add(reader.GetColumnSchema()[i].ColumnName);
-                        dbo.RowValues.Add(reader.GetValue(i));
+                        dbo.Add(reader.GetValue(i), reader.GetColumnSchema()[i].ColumnName, _helper.ParseToSqlDbType(reader.GetColumnSchema()[i].DataTypeName));
                     }
                     dboList.Add(dbo);
                 }
@@ -202,9 +200,7 @@ namespace CustomORM.Services
                     dbo.TableName = secondTableName;
                     for (int i = 0; i < count; i++)
                     {
-                        dbo.ColumnDataTypes.Add((SqlDbType)Enum.Parse(typeof(SqlDbType), reader.GetColumnSchema()[i].DataTypeName, true));
-                        dbo.ColumnNames.Add(reader.GetColumnSchema()[i].ColumnName);
-                        dbo.RowValues.Add(reader.GetValue(i));
+                        dbo.Add(reader.GetValue(i), reader.GetColumnSchema()[i].ColumnName, _helper.ParseToSqlDbType(reader.GetColumnSchema()[i].DataTypeName));
                     }
                     dboList.Add(dbo);
                 }

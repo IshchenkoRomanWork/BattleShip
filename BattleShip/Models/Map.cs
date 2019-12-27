@@ -1,40 +1,67 @@
 ﻿using BattleShip.Services;
+using CustomORM.Models.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace BattleShip.Models
 {
+    [Table("Map")]
     public class Map
     {
+        [Column("MapId", "int", true)]
         public int Id { get; set; }
-        private List<(ShipLocation, Ship)> _allShips;
+        private List<ShipInformation> _allShips;
+        [IsForeignKey]
+        [Column("MapId", "int")]
+        public List<ShipInformation> AllShips
+        {
+            get
+            {
+                return _allShips;
+            }
+            set
+            {
+                foreach(var info in value)
+                {
+                    var coords = _mapHelper.GetAllCoordsInSection
+                        (info.ShipLocation.Direction, info.Ship.Length, info.ShipLocation.CoordX, info.ShipLocation.CoordY);
+                    ValidateCoords(coords);
 
+                    _occupiedCoords.AddRange(coords);
+                }
+                _allShips = value;
+            }
+        }
+        [Column("QuadrantSize", "int")]
+        public int QuadrantSize { get; set; }
         private List<(int, int)> _occupiedCoords;
 
         private MapHelper _mapHelper;
-
-        private int _quadrantSize;
-
-        public Map(int quadrantSize)
+        public Map(int quadrantSize) : this()
         {
-            _allShips = new List<(ShipLocation, Ship)>();
-            _occupiedCoords = new List<(int, int)>();
-            _mapHelper = new MapHelper();
             if(quadrantSize < 1)
             {
                 throw new Exception("Quadrant size can't be less thah 1");
             }
-            _quadrantSize = quadrantSize;
+            QuadrantSize = quadrantSize;
+            Id = new Random().Next();
+        }
+
+        public Map()
+        {
+            _allShips = new List<ShipInformation>();
+            _mapHelper = new MapHelper();
+            _occupiedCoords = new List<(int, int)>();
         }
 
         public void AddShip(Ship ship, ShipLocation startingLocation)
         {
-            var coords = _mapHelper.GetAllCoordsInSection(startingLocation.Direction, ship.Length, startingLocation.Coords);
+            var coords = _mapHelper.GetAllCoordsInSection(startingLocation.Direction, ship.Length, startingLocation.CoordX, startingLocation.CoordY);
 
             ValidateCoords(coords);
 
-            _allShips.Add((startingLocation, ship));
+            _allShips.Add(new ShipInformation(startingLocation, ship));
             _occupiedCoords.AddRange(coords);
         }
 
@@ -60,7 +87,7 @@ namespace BattleShip.Models
         {
             foreach(var coord in checkedCoords)
             {
-                if (Math.Abs(coord.Item1) > _quadrantSize || Math.Abs(coord.Item2) > _quadrantSize)
+                if (Math.Abs(coord.Item1) > QuadrantSize || Math.Abs(coord.Item2) > QuadrantSize)
                     return false;
             }
             return true;
@@ -88,7 +115,7 @@ namespace BattleShip.Models
             for (int i = 0; i < _allShips.Count; i++)
             {
                 sBuilder.Append(String.Format("This is {0} ship \n \n", i + 1));
-                sBuilder.Append(_allShips[i].Item2.ToString());
+                sBuilder.Append(_allShips[i].Ship.ToString());
                 sBuilder.Append("\n");
             }
 
@@ -102,7 +129,7 @@ namespace BattleShip.Models
                     throw new Exception("Quadrans can range only from 1 to 4");
                 if (xCoord < 1 || yCoord < 1)
                     throw new Exception("Coords cant be less than one");
-                if (Math.Abs(xCoord) > _quadrantSize || Math.Abs(yCoord) > _quadrantSize)
+                if (Math.Abs(xCoord) > QuadrantSize || Math.Abs(yCoord) > QuadrantSize)
                     throw new Exception("Coords can't be ot of quadrant size");
 
                 switch (quadrant)
@@ -121,8 +148,8 @@ namespace BattleShip.Models
 
                 foreach (var pair in _allShips)
                 {
-                    if (pair.Item1.Coords == (xCoord, yCoord))
-                        return pair.Item2;
+                    if (pair.ShipLocation.CoordX == xCoord && pair.ShipLocation.CoordY == yCoord)
+                        return pair.Ship;
                 }
 
                 throw new Exception("Ship is not Found on these coordinates");

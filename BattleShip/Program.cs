@@ -1,4 +1,5 @@
-﻿using BattleShip.Services;
+﻿using BattleShip.Models;
+using BattleShip.Services;
 using CustomORM.Interfaces;
 using CustomORM.Services;
 using CustomORM.Test;
@@ -16,6 +17,11 @@ namespace BattleShip
             //ConsoleWorker consoleWorker = new ConsoleWorker();
             //consoleWorker.EntryPoint();
 
+            Test();
+        }
+
+        static void Test()
+        {
             //TestClass testClass = new TestClass()
             //{
             //    Id = 100,
@@ -31,11 +37,41 @@ namespace BattleShip
             //    new SecondTestClass() {boolValue=true, Id = 44 }
             //};
 
-            TestClass tc = new TestClass();
-            IORM<TestClass> orm = new ORM<TestClass>("Server=ISHCHENKO;Database=TestDatabase;Trusted_Connection=True;");
-            tc = orm.GetFromDatabase(320);
-            Console.WriteLine(tc.SecondList[2].Id);
+            //IORM<TestClass> orm = new ORM<TestClass>("Server=ISHCHENKO;Database=TestDatabase;Trusted_Connection=True;");
+            //var all = orm.GetAllFromDatabase();
+            //foreach(var tc in all)
+            //{
+            //    Console.WriteLine(tc.IntValue);
+            //    foreach (var stc in tc.SecondList)
+            //    {
+            //        Console.WriteLine(stc.Id);
+            //    }
 
+            //}
+
+            IORM<Map> orm = new ORM<Map>("Server=ISHCHENKO;Database=BattleShip;Trusted_Connection=True;");
+            //var map = new Map(50);
+            //map.AllShips = new List<ShipInformation>();
+            //map.AllShips.Add(new ShipInformation(
+            //    new ShipLocation(Direction.Down, (1, 1)),
+            //    new WarShip(5, 10, 10, 2)
+            //    ));
+            //map.AllShips.Add(new ShipInformation(
+            //    new ShipLocation(Direction.Up, (2, 2)),
+            //    new WarShip(7, 13, 12, 5)
+            //    ));
+            //map.AllShips.Add(new ShipInformation(
+            //    new ShipLocation(Direction.Up, (3, 3)),
+            //    new WarShip(6, 11, 6, 100)
+            //    ));
+            var map = orm.GetAllFromDatabase().Single();
+            map.AllShips.RemoveAt(2);
+            map.QuadrantSize = 70;
+            orm.DeleteFromDatabase(map.Id);
+            //foreach(var map in maps)
+            //{
+            //    Console.WriteLine(map);
+            //};
 
             //using (SqlConnection connection = new SqlConnection("Server = ISHCHENKO; Database = TestDatabase; Trusted_Connection = True;"))
             //{

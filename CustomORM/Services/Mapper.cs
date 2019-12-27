@@ -11,7 +11,7 @@ using System.Collections;
 
 namespace CustomORM.Services
 {
-    internal class Mapper<Model> : IMapper<Model> where Model : new()
+    internal class Mapper<Model> : IMapper<Model> 
     {
         private AttributeHelper _helper;
 
@@ -35,6 +35,15 @@ namespace CustomORM.Services
                     dbo.PrimaryKey = propertyField.GetValue(item.InnerObject);
                 }
             }
+            //var def = this.GetType().GetMethod("GetDefaultGeneric").MakeGenericMethod(dbo.PrimaryKey.GetType()).Invoke(this, null); 
+            //if (dbo.PrimaryKey == default)
+            //{
+            //    throw new Exception("Primary Key isn't set");
+            //}
+            if (item.InnerObject.GetType() != item.BaseType)
+            {
+                dbo.Add(item.InnerObject.GetType().FullName, "Discriminator", SqlDbType.NVarChar);
+            }
             return dbo;
         }
 
@@ -43,6 +52,12 @@ namespace CustomORM.Services
             List<IPropertyFieldInfo> propertyFields = _helper.GetPropertyFieldList(type).ToList();
             var nonFkPropertyFields = propertyFields.Where(pf => !_helper.HasAttribute(pf.AsMemberInfo(), typeof(IsForeignKeyAttribute))).ToList();
 
+            string realType = (string)item.GetValueByColumnName("Discriminator");
+            if (realType != null)
+            {
+                string assemblyName = realType.Split('.')[0];
+                type = Assembly.Load(assemblyName).GetType(realType);
+            }
             object innerObject = Activator.CreateInstance(type);
             foreach (var propertyField in nonFkPropertyFields)
             {

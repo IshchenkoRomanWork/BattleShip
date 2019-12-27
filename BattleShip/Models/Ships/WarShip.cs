@@ -7,13 +7,8 @@ namespace BattleShip.Models
 {
     class WarShip : Ship, IWarShip
     {
-        public int ActionRange { get; set; }
-        public int ShotDamage { get; set; }
-
-        public WarShip(int length, int speed, int hitPoints, int actionRange, int shotDamage) : base(length, speed, hitPoints)
+        public WarShip(int length, int speed, int hitPoints, int actionRange) : base(length, speed, hitPoints, actionRange)
         {
-            ActionRange = actionRange;
-            ShotDamage = shotDamage;
         }
 
         public WarShip()

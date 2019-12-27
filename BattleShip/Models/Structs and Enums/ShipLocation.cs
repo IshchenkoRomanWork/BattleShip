@@ -1,18 +1,31 @@
-﻿using System;
+﻿using CustomORM.Models.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace BattleShip.Models
 {
-    public struct ShipLocation
+    [Table("ShipLocation")]
+    public class ShipLocation
     {
+        [Column("Direction","int")]
         public Direction Direction { get; set; }
-        public (int, int) Coords { get; set; }
+        [Column("CoordX", "int")]
+        public int CoordX { get; set; }
+        [Column("CoordY", "int")]
+        public int CoordY { get; set; }
+        [Column("SLID", "int", true)]
+        public int Id { get; set; }
 
         public ShipLocation(Direction dir, (int, int) coords)
         {
             Direction = dir;
-            Coords = coords;
+            CoordX = coords.Item1;
+            CoordY = coords.Item2;
+            Id = new Random().Next();
+        }
+        public ShipLocation()
+        {
         }
     }
 }

@@ -7,13 +7,9 @@ namespace BattleShip.Models
 {
     public class RepairShip : Ship, IRepairShip
     {
-        public int ActionRange { get; set; }
-        public int RepairAmount { get; set ; }
-
-        public RepairShip(int length, int speed, int hitPoints, int actionRange, int repairAmount) : base(length, speed, hitPoints)
+        public RepairShip(int length, int speed, int hitPoints, int actionRange) : base(length, speed, hitPoints, actionRange)
         {
             ActionRange = actionRange;
-            RepairAmount = repairAmount;
         }
 
         public RepairShip()

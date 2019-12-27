@@ -1,18 +1,26 @@
-﻿using System;
+﻿using CustomORM.Models.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace BattleShip.Models
 {
+    [Table("Ship")]
     public abstract class Ship : IEquatable<Ship>
     {
+        [Column("ActionRange", "int")]
+        public int ActionRange { get; set; }
+        [Column("Length", "int")]
         public int Length { get; set; }
+        [Column("Speed", "int")]
         public int Speed { get; set; }
+        [Column("HitPoints", "int")]
         public int HitPoints { get; set; }
-        public int id { get; set; }
+        [Column("ShipId", "int", true)]
+        public int Id { get; set; }
 
-        public Ship(int length, int speed, int hitPoints)
+        public Ship(int length, int speed, int hitPoints, int actionRange)
         {
             if (length < 1)
                 throw new Exception("Length of Ship can't be lesser than one");
@@ -23,6 +31,10 @@ namespace BattleShip.Models
             if (hitPoints < 0)
                 throw new Exception("Hit points can't be negative");
             HitPoints = hitPoints;
+            if (speed < 0)
+                throw new Exception("Action Range can't be negative");
+            ActionRange = actionRange;
+            Id = new Random().Next();
         }
 
         public Ship()

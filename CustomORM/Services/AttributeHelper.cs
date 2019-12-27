@@ -23,7 +23,7 @@ namespace CustomORM.Services
         }
         internal bool HasAttribute(MemberInfo info, Type attributeType)
         {
-            return info.GetCustomAttribute(attributeType, false) != null;
+            return info.GetCustomAttribute(attributeType, true) != null;
         }
         internal bool IsPrimaryKey(IPropertyFieldInfo info)
         {
@@ -41,7 +41,7 @@ namespace CustomORM.Services
             var propertyFields = GetPropertyFieldList(type);
             foreach (var propertyField in propertyFields)
             {
-                var foreignKeyAttributeList = propertyField.AsMemberInfo().GetCustomAttributes(typeof(IsForeignKeyAttribute), false);
+                var foreignKeyAttributeList = propertyField.AsMemberInfo().GetCustomAttributes(typeof(IsForeignKeyAttribute), true);
                 if (foreignKeyAttributeList.Length != 0)
                 {
                     foreignKeys.Add(propertyField);

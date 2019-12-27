@@ -7,15 +7,10 @@ namespace BattleShip.Models
 {
     class RepairWarShip : Ship, IWarShip, IRepairShip //Mixed or Universal Ship, this naming comes from possible expansion
     {
-        public int ActionRange { get; set ; }
-        public int ShotDamage { get; set; }
-        public int RepairAmount { get; set; }
 
-        public RepairWarShip(int length, int speed, int hitPoints, int actionRange, int repairAmount, int shotDamage) : base(length, speed, hitPoints)
+        public RepairWarShip(int length, int speed, int hitPoints, int actionRange) : base(length, speed, hitPoints, actionRange)
         {
             ActionRange = actionRange;
-            RepairAmount = repairAmount;
-            ShotDamage = shotDamage;
         }
 
         public RepairWarShip()
@@ -35,7 +30,7 @@ namespace BattleShip.Models
         public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append(String.Format("This is Mixed Type Ship \n"));
+            sBuilder.Append(string.Format("This is Mixed Type Ship \n"));
             sBuilder.Append(base.ToString());
             return sBuilder.ToString();
         }

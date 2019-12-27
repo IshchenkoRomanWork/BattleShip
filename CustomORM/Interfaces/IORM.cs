@@ -4,11 +4,12 @@ using System.Text;
 
 namespace CustomORM.Interfaces
 {
-    public interface IORM<Model> where Model : new()
+    public interface IORM<Model>
     {
         public void InsertToDatabase(Model item);
         public Model GetFromDatabase(object id);
         public void UpdateInDatabase(Model item);
         public void DeleteFromDatabase(object id);
+        public IEnumerable<Model> GetAllFromDatabase();
     }
 }

@@ -7,13 +7,10 @@ namespace BattleShip.Services
 {
     class MapHelper
     {
-        public List<(int, int)> GetAllCoordsInSection(Direction direction, int length, (int, int) startingCoord)
+        public List<(int, int)> GetAllCoordsInSection(Direction direction, int length, int headX, int headY)
         {
             var sectionCoords = new List<(int, int)>();
-            sectionCoords.Add(startingCoord);
-
-            int headX = startingCoord.Item1;
-            int headY = startingCoord.Item2;
+            sectionCoords.Add((headX, headY));
 
             for (int i = 1; i < length; i++)
             {

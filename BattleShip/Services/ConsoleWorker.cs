@@ -32,10 +32,10 @@ namespace BattleShip.Services
 
         void Stubs()
         {
-            _unitOfWork.Map.AddShip(new RepairWarShip(10, 40, 40, 40, 40, 40), new ShipLocation(Direction.Right, (1, 2)));
-            _unitOfWork.Map.AddShip(new WarShip(5, 50, 50, 50, 50), new ShipLocation(Direction.Left, (10, 10)));
-            _unitOfWork.Map.AddShip(new WarShip(2, 20, 20, 20, 20), new ShipLocation(Direction.Right, (1, 50)));
-            _unitOfWork.Map.AddShip(new RepairShip(3, 30, 30, 30, 30), new ShipLocation(Direction.Left, (-100, 1)));
+            //_unitOfWork.Map.AddShip(new RepairWarShip(10, 40, 40, 40, 40, 40), new ShipLocation(Direction.Right, (1, 2)));
+            //_unitOfWork.Map.AddShip(new WarShip(5, 50, 50, 50, 50), new ShipLocation(Direction.Left, (10, 10)));
+            //_unitOfWork.Map.AddShip(new WarShip(2, 20, 20, 20, 20), new ShipLocation(Direction.Right, (1, 50)));
+            //_unitOfWork.Map.AddShip(new RepairShip(3, 30, 30, 30, 30), new ShipLocation(Direction.Left, (-100, 1)));
             //var stubShip = _unitOfWork.Map[2, 1000, 1];
             //Console.WriteLine(stubShip.ToString());
         }
