@@ -2,6 +2,7 @@
 using CustomORM.Models.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace BattleShip.Models
@@ -22,7 +23,7 @@ namespace BattleShip.Models
             }
             set
             {
-                foreach(var info in value)
+                foreach (var info in value ?? Enumerable.Empty<ShipInformation>())
                 {
                     var coords = _mapHelper.GetAllCoordsInSection
                         (info.ShipLocation.Direction, info.Ship.Length, info.ShipLocation.CoordX, info.ShipLocation.CoordY);
@@ -40,7 +41,7 @@ namespace BattleShip.Models
         private MapHelper _mapHelper;
         public Map(int quadrantSize) : this()
         {
-            if(quadrantSize < 1)
+            if (quadrantSize < 1)
             {
                 throw new Exception("Quadrant size can't be less thah 1");
             }
@@ -68,7 +69,7 @@ namespace BattleShip.Models
         private void ValidateCoords(List<(int, int)> validationCoords)
         {
             //There's a reason to make validation interface and validation list
-            if(!CoordIsNotOnAxis(validationCoords[0]))
+            if (!CoordIsNotOnAxis(validationCoords[0]))
             {
                 throw new Exception("Start coord can't lie on axis");
             }
@@ -78,14 +79,14 @@ namespace BattleShip.Models
             }
             bool coordsAreFree = CheckCoordsAreFree(validationCoords);
             if (!CheckCoordsAreFree(validationCoords))
-                {
-                    throw new Exception("There's another ship on this coordinates");
-                }
+            {
+                throw new Exception("There's another ship on this coordinates");
+            }
         }
 
         private bool InQuadrantSize(List<(int, int)> checkedCoords)
         {
-            foreach(var coord in checkedCoords)
+            foreach (var coord in checkedCoords)
             {
                 if (Math.Abs(coord.Item1) > QuadrantSize || Math.Abs(coord.Item2) > QuadrantSize)
                     return false;

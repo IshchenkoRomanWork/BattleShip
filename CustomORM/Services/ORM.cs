@@ -37,9 +37,12 @@ namespace CustomORM.Services
         }
         public void DeleteFromDatabase(object id)
         {
-            Model oldModel = GetFromDatabase(id);
-            List<DBObject> cohesionList = GetDBOInCohesion(oldModel, typeof(Model));
-            _repository.Delete(id, _dataBaseName);
+            Model model = GetFromDatabase(id);
+            List<DBObject> cohesionList = GetDBOInCohesion(model, typeof(Model));
+            foreach (var dbo in cohesionList)
+            {
+                _repository.Delete(dbo.PrimaryKey, dbo.TableName);
+            }
         }
         public Model GetFromDatabase(object id)
         {
@@ -112,12 +115,15 @@ namespace CustomORM.Services
                 foreignKeyBaseType = foreignKey.GetObjectType().GenericTypeArguments[0];
                 ColumnAttribute colAttrib = (ColumnAttribute)_helper.GetDataBaseAttribute(foreignKey.AsMemberInfo());
 
-                foreach (var element in foreignKeyValue as ICollection)
+                if (foreignKeyValue != null)
                 {
-                    var innerList = GetDBOInCohesion(element, foreignKeyBaseType);
-                    finalList.AddRange(innerList); 
-                    var toManydbo = innerList[innerList.Count - 1];
-                    toManydbo.Add(_helper.GetId(item), colAttrib.DBName, _helper.ParseToSqlDbType(colAttrib.DBDataType));
+                    foreach (var element in foreignKeyValue as ICollection)
+                    {
+                        var innerList = GetDBOInCohesion(element, foreignKeyBaseType);
+                        finalList.AddRange(innerList);
+                        var toManydbo = innerList[innerList.Count - 1];
+                        toManydbo.Add(_helper.GetId(item), colAttrib.DBName, _helper.ParseToSqlDbType(colAttrib.DBDataType));
+                    }
                 }
             }
             return finalList;
