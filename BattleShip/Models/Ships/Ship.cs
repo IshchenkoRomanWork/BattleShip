@@ -12,10 +12,26 @@
         [Column("ActionRange", "int")]
         public int ActionRange { get; set; }
 
-        [Column("Length", "int")]
-        public int Length { get; set; }
+        private int _length;
 
-        [Column("Speed", "int")]
+        [Column("Length", "int")]
+        public int Length
+        {
+            get
+            {
+                return _length;
+            }
+            set
+            {
+                _length = value;
+                EventHandler handler = LengthChanged;
+                handler?.Invoke(this, null);
+            }
+        }
+
+        public event EventHandler LengthChanged;
+
+        [Column("Speed", "int")]    
         public int Speed { get; set; }
 
         [Column("HitPoints", "int")]
@@ -41,7 +57,9 @@
             Id = new Random().Next();
         }
 
-        public Ship() { }
+        public Ship() 
+        {
+        }
         public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();

@@ -25,6 +25,7 @@ namespace BattleShip.Models
             {
                 foreach (var info in value ?? Enumerable.Empty<ShipInformation>())
                 {
+                    info.Ship.LengthChanged += EventValidateCoords;
                     var coords = _mapHelper.GetAllCoordsInSection
                         (info.ShipLocation.Direction, info.Ship.Length, info.ShipLocation.CoordX, info.ShipLocation.CoordY);
                     ValidateCoords(coords);
@@ -35,7 +36,26 @@ namespace BattleShip.Models
             }
         }
         [Column("QuadrantSize", "int")]
-        public int QuadrantSize { get; set; }
+        private int _quadrantSize;
+        public int QuadrantSize
+        {
+            get
+            {
+                return _quadrantSize;
+            }
+            set
+            {
+                _quadrantSize = value;
+                try
+                {
+                    ValidateCoords(_occupiedCoords);
+                }
+                catch(Exception e)
+                {
+                    throw new Exception("New quadrant size is not valid", e);
+                }
+            }
+        }
         private List<(int, int)> _occupiedCoords;
 
         private MapHelper _mapHelper;
@@ -58,6 +78,7 @@ namespace BattleShip.Models
 
         public void AddShip(Ship ship, ShipLocation startingLocation)
         {
+            ship.LengthChanged += EventValidateCoords;
             var coords = _mapHelper.GetAllCoordsInSection(startingLocation.Direction, ship.Length, startingLocation.CoordX, startingLocation.CoordY);
 
             ValidateCoords(coords);
@@ -66,9 +87,18 @@ namespace BattleShip.Models
             _occupiedCoords.AddRange(coords);
         }
 
+        private void EventValidateCoords(object ship, EventArgs eventArgs)
+        {
+            var shipToValidate = _allShips.Find(si => si.Ship.Id == (ship as Ship).Id);
+            var coords = _mapHelper.GetAllCoordsInSection(shipToValidate.ShipLocation.Direction, shipToValidate.Ship.Length, shipToValidate.ShipLocation.CoordX, shipToValidate.ShipLocation.CoordY);
+            ValidateCoords(coords);
+        }
         private void ValidateCoords(List<(int, int)> validationCoords)
         {
             //There's a reason to make validation interface and validation list
+            if (validationCoords.Count == 0)
+                return;
+
             if (!CoordIsNotOnAxis(validationCoords[0]))
             {
                 throw new Exception("Start coord can't lie on axis");
@@ -88,7 +118,7 @@ namespace BattleShip.Models
         {
             foreach (var coord in checkedCoords)
             {
-                if (Math.Abs(coord.Item1) > QuadrantSize || Math.Abs(coord.Item2) > QuadrantSize)
+                if (Math.Abs(coord.Item1) > _quadrantSize || Math.Abs(coord.Item2) > _quadrantSize)
                     return false;
             }
             return true;
@@ -130,7 +160,7 @@ namespace BattleShip.Models
                     throw new Exception("Quadrans can range only from 1 to 4");
                 if (xCoord < 1 || yCoord < 1)
                     throw new Exception("Coords cant be less than one");
-                if (Math.Abs(xCoord) > QuadrantSize || Math.Abs(yCoord) > QuadrantSize)
+                if (Math.Abs(xCoord) > _quadrantSize || Math.Abs(yCoord) > _quadrantSize)
                     throw new Exception("Coords can't be ot of quadrant size");
 
                 switch (quadrant)

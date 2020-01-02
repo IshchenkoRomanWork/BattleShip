@@ -20,6 +20,7 @@ namespace CustomORM.Services
 
         public ORM(string connectionString)
         {
+            ValidateModel(typeof(Model));
             _helper = new AttributeHelper();
             if (!_helper.HasAttribute(typeof(Model), typeof(TableAttribute)))
                 throw new Exception("Is not database type!");
@@ -47,11 +48,16 @@ namespace CustomORM.Services
         public Model GetFromDatabase(object id)
         {
             var dbo = _repository.Get(id, _dataBaseName);
+            if(dbo.PrimaryKey == null)
+            {
+                return default;
+            }
             var dto = GetDTOInCohesion(dbo, typeof(Model));
             return (Model)dto.InnerObject;
         }
         public void InsertToDatabase(Model item)
         {
+            ValidateItem(item);
             List<DBObject> cohesionList = GetDBOInCohesion(item, typeof(Model));
             foreach (var dbo in cohesionList)
             {
@@ -60,6 +66,7 @@ namespace CustomORM.Services
         }
         public void UpdateInDatabase(Model item)
         {
+            ValidateItem(item);
             List<DBObject> cohesionList = GetDBOInCohesion(item, typeof(Model));
             if (!_repository.Exists(cohesionList[0]))
             {
@@ -87,6 +94,22 @@ namespace CustomORM.Services
                 }
             }
         }
+
+        private void ValidateItem(Model item)
+        {
+            if (item == null)
+            {
+                throw new NullReferenceException("Model can't be null");
+            }
+        }
+
+        private void ValidateModel(Type type)
+        {
+            //Type Validation Logic
+            //string dbName = _helper.GetDataBaseAttribute(type).DBName;
+            //var propertyFieldList = _helper.GetPropertyFieldList
+        }
+
         private List<DBObject> GetDBOInCohesion(object item, Type baseType)
         {
             List<DBObject> finalList = new List<DBObject>();
@@ -141,7 +164,7 @@ namespace CustomORM.Services
                 if (_helper.IsToMany(foreignKey)) //foreignKeyValue is empty
                 {
                     var foreignKeyElementType = foreignKeyType.GenericTypeArguments[0];
-                    var foreignKeyElementDboList = _repository.GetAllWithForeignKey(_helper.GetDataBaseAttribute(model.GetType()).DBName,
+                    var foreignKeyElementDboList = _repository.GetForeignKeyValues(_helper.GetDataBaseAttribute(model.GetType()).DBName,
                         _helper.GetId(model), _helper.GetDataBaseAttribute(foreignKeyElementType).DBName, true);
                     foreignKeyValue = foreignKeyElementDboList.Select(dbo => GetDTOInCohesion(dbo, foreignKeyElementType).InnerObject).ToList();
                     MethodInfo foreignKeyAddMethod = foreignKeyType.GetMethod("Add");
@@ -166,7 +189,7 @@ namespace CustomORM.Services
 
         private DTObject GetDTOFromModel(object item, Type baseType)
         {
-            var propertyFields = _helper.GetPropertyFieldList(item.GetType());
+            var propertyFields = _helper.GetPropertyFieldList(item?.GetType());
             return new DTObject()
             {
                 BaseType = baseType,

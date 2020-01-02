@@ -173,7 +173,7 @@ namespace CustomORM.Services
                 SqlCommand deleteCommand = new SqlCommand();
                 deleteCommand.Parameters.AddWithValue("@id", id);
                 deleteCommand.CommandText = "DELETE FROM " + tablename + " WHERE " + _tablesAndPrimaryKeys[tablename] + "= @id";
-                  
+
                 int result;
 
                 deleteCommand.Connection = connection;
@@ -196,11 +196,13 @@ namespace CustomORM.Services
                 command.Connection = connection;
                 connection.Open();
                 reader = command.ExecuteReader();
-                int count = reader.FieldCount;
-                reader.Read();
-                for (int i = 0; i < count; i++)
+                if (reader.Read())
                 {
-                    dbo.Add(reader.GetValue(i), reader.GetColumnSchema()[i].ColumnName, _helper.ParseToSqlDbType(reader.GetColumnSchema()[i].DataTypeName));
+                    int count = reader.FieldCount;
+                    for (int i = 0; i < count; i++)
+                    {
+                        dbo.Add(reader.GetValue(i), reader.GetColumnSchema()[i].ColumnName, _helper.ParseToSqlDbType(reader.GetColumnSchema()[i].DataTypeName));
+                    }
                 }
                 connection.Close();
             }
@@ -232,7 +234,7 @@ namespace CustomORM.Services
             }
             return dboList;
         }
-        List<DBObject> IRepository.GetAllWithForeignKey(string firstTableName, object foreignKeyValue, string secondTableName, bool toMany)
+        List<DBObject> IRepository.GetForeignKeyValues(string firstTableName, object foreignKeyValue, string secondTableName, bool toMany)
         {
             List<DBObject> dboList = new List<DBObject>();
             SqlCommand command = new SqlCommand();

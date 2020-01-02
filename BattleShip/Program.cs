@@ -23,26 +23,18 @@ namespace BattleShip
         static void Test()
         {
 
-            IORM<Map> orm = new ORM<Map>("Server=ISHCHENKO;Database=BattleShip;Trusted_Connection=True;");
+            IORM<NonExistentDbClass> orm = new ORM<NonExistentDbClass>("Server=ISHCHENKO;Database=BattleShip;Trusted_Connection=True;");
             //var map = new Map(50);
             //map.AllShips = new List<ShipInformation>();
-            //map.AllShips.Add(new ShipInformation(
-            //    new ShipLocation(Direction.Down, (1, 1)),
-            //    new WarShip(5, 10, 10, 2)
-            //    ));
-            //map.AllShips.Add(new ShipInformation(
-            //    new ShipLocation(Direction.Up, (2, 2)),
-            //    new WarShip(7, 13, 12, 5)
-            //    ));
-            //map.AllShips.Add(new ShipInformation(
-            //    new ShipLocation(Direction.Up, (3, 3)),
-            //    new WarShip(6, 11, 6, 100)
-            //    ));
+            //map.AddShip(
+            //    new WarShip(5, 10, 10, 2),
+            //    new ShipLocation(Direction.Down, (1, 1))
+            //    );
+            //map.AllShips[0].Ship.Length = 70;
+            orm.GetAllFromDatabase();
 
             //orm.InsertToDatabase(map);
-            var map = orm.GetAllFromDatabase().Single();
-            map.AllShips = null;
-            orm.UpdateInDatabase(map);
+            //orm.GetAllFromDatabase().Single();
         }
     }
 }

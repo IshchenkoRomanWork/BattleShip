@@ -14,7 +14,7 @@ namespace CustomORM.Interfaces
         internal List<DBObject> GetAll(string tableName);
         internal bool Exists(DBObject dBObject);
 
-        internal List<DBObject> GetAllWithForeignKey(string firstTableName, object foreignKeyValue, string secondTableName, bool toMany);
+        internal List<DBObject> GetForeignKeyValues(string firstTableName, object foreignKeyValue, string secondTableName, bool toMany);
 
 
     }
