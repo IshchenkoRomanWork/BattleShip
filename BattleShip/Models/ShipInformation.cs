@@ -15,7 +15,7 @@ namespace BattleShip.Models
         [Column("ShipID", "int")]
         public Ship Ship {get; set;}
         [Column("SIID", "int", true)]
-        public int Id { get; set; }
+        public int Id { get; private set; }
 
         public ShipInformation(ShipLocation location, Ship ship)
         {

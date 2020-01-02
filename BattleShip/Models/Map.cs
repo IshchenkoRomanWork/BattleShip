@@ -10,7 +10,7 @@ namespace BattleShip.Models
     public class Map
     {
         [Column("MapId", "int", true)]
-        public int Id { get; set; }
+        public int Id { get; private set; }
         private List<ShipInformation> _allShips;
         [IsForeignKey]
         [Column("MapId", "int")]

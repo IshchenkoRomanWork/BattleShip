@@ -64,10 +64,10 @@ namespace BattleShip
             //    new ShipLocation(Direction.Up, (3, 3)),
             //    new WarShip(6, 11, 6, 100)
             //    ));
-            var map = orm.GetAllFromDatabase().Single();
-            map.AllShips.RemoveAt(2);
-            map.QuadrantSize = 70;
-            orm.DeleteFromDatabase(map.Id);
+
+            //orm.InsertToDatabase(map);
+            //var map = orm.GetAllFromDatabase().Single();
+            orm.DeleteFromDatabase(1892184318);
             //foreach(var map in maps)
             //{
             //    Console.WriteLine(map);

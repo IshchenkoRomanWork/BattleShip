@@ -20,9 +20,6 @@ namespace BattleShip.Models
         {
             throw new NotImplementedException();
         }
-
-
-
         public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();

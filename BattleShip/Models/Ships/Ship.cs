@@ -1,24 +1,28 @@
-﻿using CustomORM.Models.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-
-namespace BattleShip.Models
+﻿namespace BattleShip.Models
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Text;
+    using CustomORM.Models.Attributes;
+
     [Table("Ship")]
     public abstract class Ship : IEquatable<Ship>
     {
         [Column("ActionRange", "int")]
         public int ActionRange { get; set; }
+
         [Column("Length", "int")]
         public int Length { get; set; }
+
         [Column("Speed", "int")]
         public int Speed { get; set; }
+
         [Column("HitPoints", "int")]
         public int HitPoints { get; set; }
+
         [Column("ShipId", "int", true)]
-        public int Id { get; set; }
+        public int Id { get; private set; }
 
         public Ship(int length, int speed, int hitPoints, int actionRange)
         {
@@ -37,14 +41,11 @@ namespace BattleShip.Models
             Id = new Random().Next();
         }
 
-        public Ship()
-        {
-
-        }
+        public Ship() { }
         public override string ToString()
         {
             StringBuilder sBuilder = new StringBuilder();
-            sBuilder.Append(String.Format("This ships Length is {0} \n", Length));
+            sBuilder.Append(string.Format("This ships Length is {0} \n", Length));
             sBuilder.Append(String.Format("This ships speed is {0} \n", Speed));
             sBuilder.Append(String.Format("This ships hitPoints is {0} \n", HitPoints));
             return sBuilder.ToString();
@@ -68,9 +69,5 @@ namespace BattleShip.Models
             return typesAreEqual && speedAreEqual && lengthAreEqual;
             //Also we can use "if" to stop calculation after first inequality
         }
-
-
-
-
     }
 }

@@ -15,7 +15,7 @@ namespace BattleShip.Models
         [Column("CoordY", "int")]
         public int CoordY { get; set; }
         [Column("SLID", "int", true)]
-        public int Id { get; set; }
+        public int Id { get; private set; }
 
         public ShipLocation(Direction dir, (int, int) coords)
         {

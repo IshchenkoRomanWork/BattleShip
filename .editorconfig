@@ -5,3 +5,9 @@ csharp_style_unused_value_assignment_preference = unused_local_variable:suggesti
 
 # SA1201: Elements should appear in the correct order
 dotnet_diagnostic.SA1201.severity = suggestion
+
+# SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = none
+
+# CS0660: Type defines operator == or operator != but does not override Object.Equals(object o)
+dotnet_diagnostic.CS0660.severity = none

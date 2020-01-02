@@ -35,11 +35,11 @@ namespace CustomORM.Services
             var dtoList = dboList.Select(dbo => (Model)GetDTOInCohesion(dbo, typeof(Model)).InnerObject);
             return dtoList;
         }
-        public void DeleteFromDatabase(object id) //OnDelete logic lies on database here
+        public void DeleteFromDatabase(object id)
         {
             Model oldModel = GetFromDatabase(id);
             List<DBObject> cohesionList = GetDBOInCohesion(oldModel, typeof(Model));
-            DeleteDBOListWithCohesionRespect(cohesionList);
+            _repository.Delete(id, _dataBaseName);
         }
         public Model GetFromDatabase(object id)
         {
@@ -64,9 +64,14 @@ namespace CustomORM.Services
             }
 
             Model oldModel = GetFromDatabase(_helper.GetId(item));
-            List<DBObject> oldCohesionList = GetDBOInCohesion(oldModel, typeof(Model));
 
-            DeleteDBOListWithCohesionRespect(oldCohesionList.Except(cohesionList));
+            List<DBObject> oldCohesionList = GetDBOInCohesion(oldModel, typeof(Model));
+            var deletedValuesList = oldCohesionList.Except(cohesionList);
+
+            foreach(var dbo in deletedValuesList)
+            {
+                _repository.Delete(dbo.PrimaryKey, dbo.TableName);
+            }
             foreach (var dbo in cohesionList)
             {
                 if (_repository.Exists(dbo))
@@ -153,30 +158,6 @@ namespace CustomORM.Services
             return dto;
         }
 
-        private void DeleteDBOListWithCohesionRespect(IEnumerable<DBObject> dboEnum)
-        {
-            //var dboList = dboEnum.ToList();
-            //while(dboList.Count != 0)
-            //{
-            //    int startingCount = dboList.Count;
-            //    for (int i = 0; i < dboList.Count;)
-            //    {
-            //        if (!dboList.Any(dbo => dbo.RowValues.Any(rv => rv == dboList[i].PrimaryKey)))
-            //        {
-            //            _repository.Delete(dboList[i].PrimaryKey, dboList[i].TableName);
-            //            dboList.RemoveAt(i);
-            //        }
-            //        else
-            //        {
-            //            i++;
-            //        }
-            //    }
-            //    if(startingCount == dboList.Count)
-            //    {
-            //        throw new Exception("Database is fully FK self-connected, we can't delete any value");
-            //    }
-            //}
-        }
         private DTObject GetDTOFromModel(object item, Type baseType)
         {
             var propertyFields = _helper.GetPropertyFieldList(item.GetType());

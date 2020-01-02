@@ -76,7 +76,7 @@ namespace CustomORM.Services
 
         }
         void IRepository.Update(DBObject dBObject)
-        {   
+        {
             SqlCommand command = new SqlCommand();
             StringBuilder commandBuilder = new StringBuilder();
             commandBuilder.Append("UPDATE " + dBObject.TableName + " SET ");
@@ -105,21 +105,83 @@ namespace CustomORM.Services
         }
         void IRepository.Delete(object id, string tablename)
         {
+            string idColumn = _tablesAndPrimaryKeys[tablename];
+            SqlCommand getFKCommand = new SqlCommand();
+            getFKCommand.Parameters.AddWithValue("@idColumn", idColumn);
+            getFKCommand.CommandText = "SELECT fkColumnUsage.TABLE_NAME, fkColumnUsage.COLUMN_NAME, fKColumn.IS_NULLABLE FROM " +
+                            "INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as fkColumnUsage " +
+                            "JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS as fKeys ON fKeys.CONSTRAINT_NAME = fkColumnUsage.CONSTRAINT_NAME " +
+                            "JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE as pKColumnUsage ON pKColumnUsage.CONSTRAINT_NAME = fKeys.UNIQUE_CONSTRAINT_NAME " +
+                            "JOIN INFORMATION_SCHEMA.COLUMNS as fKColumn ON fkColumnUsage.COLUMN_NAME = fKColumn.COLUMN_NAME AND fkColumnUsage.TABLE_NAME = fKColumn.TABLE_NAME " +
+                            "WHERE pKColumnUsage.COLUMN_NAME = @idColumn ";
 
-            SqlCommand command = new SqlCommand();
-            command.Parameters.AddWithValue("@id", id);
-            command.CommandText = "DELETE FROM " + tablename + " WHERE " + _tablesAndPrimaryKeys[tablename] + "= @id";
-            
-            int result;
             using (SqlConnection connection = new SqlConnection(_connectionString))
             {
-                command.Connection = connection;
+                getFKCommand.Connection = connection;
                 connection.Open();
-                result = command.ExecuteNonQuery();
+                SqlDataReader reader;
+                reader = getFKCommand.ExecuteReader();
+
+
+                List<(bool, string, string, string)> fKInfoList = new List<(bool, string, string, string)>();
+                while (reader.Read())
+                {
+                    bool isNullable = reader.GetString(2) == "YES";
+                    string fkTableName = reader.GetString(0);
+                    string fkColumnName = reader.GetString(1);
+                    string fkPrimaryKeyColumn = _tablesAndPrimaryKeys[fkTableName];
+                    fKInfoList.Add((isNullable, fkTableName, fkColumnName, fkPrimaryKeyColumn));
+                }
+                connection.Close();
+                SqlCommand getFKIdCommand;
+                SqlDataReader getReader;
+                foreach (var fkInfo in fKInfoList)
+                {
+                    if (fkInfo.Item1)
+                    {
+                        SqlCommand updateCommand = new SqlCommand();
+                        updateCommand.CommandText = "UPDATE " + fkInfo.Item2 + " SET " + fkInfo.Item3 + " = null WHERE " + fkInfo.Item3 + " = @fkId";
+                        updateCommand.Parameters.AddWithValue("@fkId", id);
+                        updateCommand.Connection = connection;
+                        connection.Open();
+                        updateCommand.ExecuteNonQuery();
+                        connection.Close();
+                    }
+                    else
+                    {
+                        getFKIdCommand = new SqlCommand();
+                        getFKIdCommand.CommandText = "SELECT " + fkInfo.Item4 + " FROM " + fkInfo.Item2 + " WHERE " + fkInfo.Item3 + " = @fkId";
+                        getFKIdCommand.Parameters.AddWithValue("@fkId", id);
+                        getFKIdCommand.Connection = connection;
+
+                        List<object> fkIdToDelete = new List<object>();
+                        connection.Open();
+                        getReader = getFKIdCommand.ExecuteReader();
+                        while (getReader.Read())
+                        {
+                            fkIdToDelete.Add(getReader.GetValue(0));
+                        }
+                        connection.Close();
+                        foreach (var fkId in fkIdToDelete)
+                        {
+                            (this as IRepository).Delete(fkId, fkInfo.Item2);
+                        }
+                    }
+
+                }
+
+                SqlCommand deleteCommand = new SqlCommand();
+                deleteCommand.Parameters.AddWithValue("@id", id);
+                deleteCommand.CommandText = "DELETE FROM " + tablename + " WHERE " + _tablesAndPrimaryKeys[tablename] + "= @id";
+                  
+                int result;
+
+                deleteCommand.Connection = connection;
+
+                connection.Open();
+                result = deleteCommand.ExecuteNonQuery();
                 connection.Close();
             }
-            if (result != 1)
-                throw new Exception("Database error inserting");
         }
         DBObject IRepository.Get(object id, string tableName)
         {
@@ -180,12 +242,12 @@ namespace CustomORM.Services
                 foreignkey = _tablesAndPrimaryKeys[firstTableName];
             }
             else
-            { 
+            {
                 foreignkey = _tablesAndPrimaryKeys[secondTableName];
             }
             command.Parameters.AddWithValue("@foreignKeyValue", foreignKeyValue);
             command.CommandText = "SELECT " + secondTableName + ".* FROM " + firstTableName +
-                " JOIN " + secondTableName + " ON " + firstTableName + "." + foreignkey + " = " + secondTableName + "." + foreignkey + 
+                " JOIN " + secondTableName + " ON " + firstTableName + "." + foreignkey + " = " + secondTableName + "." + foreignkey +
                 " WHERE " + secondTableName + "." + foreignkey + " = @foreignKeyValue";
             //Need to fix situation where foreign key column name in second table is different
             using (SqlConnection connection = new SqlConnection(_connectionString))
