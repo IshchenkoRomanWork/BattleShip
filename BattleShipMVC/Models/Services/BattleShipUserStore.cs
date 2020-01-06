@@ -18,6 +18,8 @@ namespace BattleShipMVC.Models
         {
             _repository = repository;
         }
+
+        #region IUserStore
         public Task CreateAsync(BattleShipUserIdentity user)
         {
             _repository.Create(user);
@@ -50,7 +52,34 @@ namespace BattleShipMVC.Models
             var firstName = fullList.SingleOrDefault(ident => ident.UserName == userName);
             return Task.FromResult(firstName);
         }
+        public Task UpdateAsync(BattleShipUserIdentity user)
+        {
+            _repository.Update(user);
 
+            return Task.FromResult(IdentityResult.Success);
+        }
+        #endregion
+
+        #region IUserPasswordStore
+        public Task<string> GetPasswordHashAsync(BattleShipUserIdentity user)
+        {
+            return Task.FromResult(user.PasswordHash);
+        }
+
+        public Task<bool> HasPasswordAsync(BattleShipUserIdentity user)
+        {
+            return Task.FromResult(string.IsNullOrEmpty(user.PasswordHash));
+        }
+
+        public Task SetPasswordHashAsync(BattleShipUserIdentity user, string passwordHash)
+        {
+            user.PasswordHash = passwordHash;
+
+            return Task.FromResult(IdentityResult.Success);
+        }
+        #endregion
+
+        #region IUserLockoutStore
         public Task<int> GetAccessFailedCountAsync(BattleShipUserIdentity user)
         {
             return Task.FromResult(0);
@@ -65,27 +94,10 @@ namespace BattleShipMVC.Models
         {
             return Task.FromResult(DateTimeOffset.Now.AddMilliseconds(1));
         }
-
-        public Task<string> GetPasswordHashAsync(BattleShipUserIdentity user)
-        {
-            return Task.FromResult(user.PasswordHash);
-        }
-
-        public Task<bool> GetTwoFactorEnabledAsync(BattleShipUserIdentity user)
-        {
-            return Task.FromResult(false);
-        }
-
-        public Task<bool> HasPasswordAsync(BattleShipUserIdentity user)
-        {
-            return Task.FromResult(string.IsNullOrEmpty(user.PasswordHash));
-        }
-
         public Task<int> IncrementAccessFailedCountAsync(BattleShipUserIdentity user)
         {
             return Task.FromResult(0);
         }
-
         public Task ResetAccessFailedCountAsync(BattleShipUserIdentity user)
         {
             return Task.Run(() => { });
@@ -101,11 +113,13 @@ namespace BattleShipMVC.Models
             return Task.Run(() => { });
         }
 
-        public Task SetPasswordHashAsync(BattleShipUserIdentity user, string passwordHash)
-        {
-            user.PasswordHash = passwordHash;
+        #endregion
 
-            return Task.FromResult(IdentityResult.Success);
+        #region IUserTwoFactorStore
+
+        public Task<bool> GetTwoFactorEnabledAsync(BattleShipUserIdentity user)
+        {
+            return Task.FromResult(false);
         }
 
         public Task SetTwoFactorEnabledAsync(BattleShipUserIdentity user, bool enabled)
@@ -113,11 +127,7 @@ namespace BattleShipMVC.Models
             return Task.Run(() => { });
         }
 
-        public Task UpdateAsync(BattleShipUserIdentity user)
-        {
-            _repository.Update(user);
+        #endregion
 
-            return Task.FromResult(IdentityResult.Success);
-        }
     }
 }

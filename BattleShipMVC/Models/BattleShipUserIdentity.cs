@@ -17,10 +17,7 @@ namespace BattleShipMVC.Models
         [Column("PasswordHash", "nvarchar")]
         public string PasswordHash { get; set; }
 
-        public BattleShipUserIdentity()
-        {
-
-        }
+        public BattleShipUserIdentity() { }
         public BattleShipUserIdentity(string userName)
         {
             Id = new Random().Next();

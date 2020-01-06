@@ -183,10 +183,10 @@
     <Compile Include="Interfaces\IBattleShipRepository.cs" />
     <Compile Include="Interfaces\ILogger.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
-    <Compile Include="Models\BattleShipRepository.cs" />
+    <Compile Include="Models\Services\BattleShipRepository.cs" />
     <Compile Include="Models\BattleShipUserIdentity.cs" />
-    <Compile Include="Models\BattleShipUserStore.cs" />
-    <Compile Include="Models\Logger.cs" />
+    <Compile Include="Models\Services\BattleShipUserStore.cs" />
+    <Compile Include="Models\Services\Logger.cs" />
     <Compile Include="Models\LogInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />

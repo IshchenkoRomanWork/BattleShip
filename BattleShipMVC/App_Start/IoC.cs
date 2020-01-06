@@ -21,17 +21,19 @@ namespace BattleShipMVC.App_Start
         public static void SetDependencies()
         {
             var builder = new ContainerBuilder();
+
             builder.RegisterControllers(Assembly.GetExecutingAssembly());
-            builder.RegisterGeneric(typeof(BattleShipRepository<>)).As(typeof(IBattleShipRepository<>));
-            builder.RegisterType<BattleShipUserStore>().As<IUserStore<BattleShipUserIdentity, int>>();
+
             builder.RegisterGeneric(typeof(ORM<>)).As(typeof(IORM<>)).WithParameter("connectionString", ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
+            builder.RegisterGeneric(typeof(BattleShipRepository<>)).As(typeof(IBattleShipRepository<>));
+
+            builder.RegisterType<BattleShipUserStore>().As<IUserStore<BattleShipUserIdentity, int>>();
             builder.RegisterType<ExceptionFilter>().SingleInstance();
             builder.RegisterType<Logger>().As<ILogger>();
 
             builder.RegisterFilterProvider();
 
             IContainer container = builder.Build();
-
             DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
         }
     }

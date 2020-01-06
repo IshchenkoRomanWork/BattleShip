@@ -18,9 +18,7 @@ namespace BattleShipMVC
     public class ApplicationUserManager : UserManager<BattleShipUserIdentity, int>
     {
         public ApplicationUserManager(IUserStore<BattleShipUserIdentity, int> store)
-            : base(store)
-        {
-        }
+            : base(store) { }
 
         public static ApplicationUserManager Create(IdentityFactoryOptions<ApplicationUserManager> options, IOwinContext context)
         {
@@ -29,14 +27,10 @@ namespace BattleShipMVC
             return manager;
         }
     }
-
-    // Configure the application sign-in manager which is used in this application.
     public class ApplicationSignInManager : SignInManager<BattleShipUserIdentity, int>
     {
         public ApplicationSignInManager(ApplicationUserManager userManager, IAuthenticationManager authenticationManager)
-            : base(userManager, authenticationManager)
-        {
-        }
+            : base(userManager, authenticationManager) { }
 
         public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
         {
