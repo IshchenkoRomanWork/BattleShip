@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.Text;
-    using CustomORM.Models.Attributes;
+    using ORM.Models.Attributes;
 
     [Table("Ship")]
     public abstract class Ship : IEquatable<Ship>

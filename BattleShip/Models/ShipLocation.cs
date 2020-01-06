@@ -1,4 +1,4 @@
-﻿using CustomORM.Models.Attributes;
+﻿using ORM.Models.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Text;

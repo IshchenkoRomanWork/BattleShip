@@ -1,8 +1,7 @@
 ﻿using BattleShip.Models;
 using BattleShip.Services;
-using CustomORM.Interfaces;
-using CustomORM.Services;
-using CustomORM.Test;
+using ORM.Interfaces;
+using ORM.Services;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -23,7 +22,7 @@ namespace BattleShip
         static void Test()
         {
 
-            IORM<NonExistentDbClass> orm = new ORM<NonExistentDbClass>("Server=ISHCHENKO;Database=BattleShip;Trusted_Connection=True;");
+            IORM<Map> orm = new ORM<Map>("Server=ISHCHENKO;Database=BattleShip;Trusted_Connection=True;");
             //var map = new Map(50);
             //map.AllShips = new List<ShipInformation>();
             //map.AddShip(
@@ -31,8 +30,7 @@ namespace BattleShip
             //    new ShipLocation(Direction.Down, (1, 1))
             //    );
             //map.AllShips[0].Ship.Length = 70;
-            orm.GetAllFromDatabase();
-
+            orm.GetFromDatabase("stringId");
             //orm.InsertToDatabase(map);
             //orm.GetAllFromDatabase().Single();
         }

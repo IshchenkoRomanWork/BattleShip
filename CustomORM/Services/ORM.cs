@@ -1,15 +1,15 @@
-﻿using CustomORM.Interfaces;
-using CustomORM.Models;
+﻿using ORM.Interfaces;
+using ORM.Models;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using System.Linq;
 using System.Collections;
-using CustomORM.Models.Attributes;
+using ORM.Models.Attributes;
 using System.Data;
 
-namespace CustomORM.Services
+namespace ORM.Services
 {
     public class ORM<Model> : IORM<Model> 
     {
@@ -108,6 +108,7 @@ namespace CustomORM.Services
             //Type Validation Logic
             //string dbName = _helper.GetDataBaseAttribute(type).DBName;
             //var propertyFieldList = _helper.GetPropertyFieldList
+            //I Have strong feeling for implemetation additional repository targeted on validation
         }
 
         private List<DBObject> GetDBOInCohesion(object item, Type baseType)

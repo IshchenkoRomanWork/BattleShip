@@ -1,5 +1,5 @@
-﻿using CustomORM.Interfaces;
-using CustomORM.Models;
+﻿using ORM.Interfaces;
+using ORM.Models;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -7,7 +7,7 @@ using System.Text;
 using System.Linq;
 using System.Data;
 
-namespace CustomORM.Services
+namespace ORM.Services
 {
     internal class ADORepository : IRepository //Consider using transactions
     {
@@ -196,7 +196,7 @@ namespace CustomORM.Services
                 command.Connection = connection;
                 connection.Open();
                 reader = command.ExecuteReader();
-                if (reader.Read())
+                if (reader.Read()) 
                 {
                     int count = reader.FieldCount;
                     for (int i = 0; i < count; i++)

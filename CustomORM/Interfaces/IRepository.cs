@@ -1,9 +1,9 @@
-﻿using CustomORM.Models;
+﻿using ORM.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CustomORM.Interfaces
+namespace ORM.Interfaces
 {
     internal interface IRepository
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace CustomORM.Interfaces
+namespace ORM.Interfaces
 {
     interface IPropertyFieldInfo
     {

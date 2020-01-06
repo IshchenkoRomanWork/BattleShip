@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CustomORM.Interfaces
+namespace ORM.Interfaces
 {
     public interface IORM<Model>
     {
